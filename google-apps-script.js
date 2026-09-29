@@ -2,25 +2,21 @@
  * Google Apps Script for IPTV Order Google Sheets Integration
  *
  * HOW TO SET UP:
- * 1. Open a new Google Sheet
+ * 1. Open your Google Sheet
  * 2. Create the first row with these header titles:
  *    [Timestamp, Order ID, Full Name, WhatsApp Number, Email, Country, Device, Subscription Plan, Devices, Fixed Price, Marketing Consent, Payment Status]
  * 3. Go to "Extensions" -> "Apps Script"
  * 4. Paste this entire code into Code.gs
- * 5. Click "Deploy" -> "New deployment"
- * 6. Select type: "Web app"
- * 7. Set:
- *    - Description: "IPTV Order Hook"
- *    - Execute as: "Me"
- *    - Who has access: "Anyone"
- * 8. Click "Deploy" and copy the Web App URL
- * 9. Paste the Web App URL into your .env.local file as:
- *    GOOGLE_SHEETS_WEBHOOK_URL="https://script.google.com/macros/s/xxxx/exec"
+ * 5. Click "Deploy" -> "Manage deployments" -> Click Edit (pencil icon) -> select "New version" -> Click "Deploy"
+ *    (Or if first time: "Deploy" -> "New deployment" -> Web app -> Execute as "Me", Who has access "Anyone")
+ * 6. Copy the Web App URL and add it to your environment variables as GOOGLE_SHEETS_WEBHOOK_URL
  */
 
 function doPost(e) {
   try {
-    const sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    // Write to tab named 'Orders', or 'Sheet1', or fallback to the very first tab
+    const sheet = ss.getSheetByName('Orders') || ss.getSheetByName('Sheet1') || ss.getSheets()[0];
     const data = JSON.parse(e.postData.contents);
 
     sheet.appendRow([
@@ -48,3 +44,9 @@ function doPost(e) {
   }
 }
 
+// Simple health check when visiting the URL in browser
+function doGet(e) {
+  return ContentService.createTextOutput(
+    JSON.stringify({ status: 'active', message: 'Pay2Me Google Sheets Webhook is running.' })
+  ).setMimeType(ContentService.MimeType.JSON);
+}

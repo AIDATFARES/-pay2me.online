@@ -108,10 +108,17 @@ export async function POST(req: NextRequest) {
       paymentStatus: isFree ? 'Free Trial' : 'Pending',
     };
 
-    // Save to Google Sheets asynchronously
-    saveOrderToGoogleSheets(orderRecord).catch((err) => {
-      console.error('[API Order] Google Sheets background sync error:', err);
-    });
+    // Save to Google Sheets (awaited to ensure serverless/lambda completion)
+    try {
+      const sheetResult = await saveOrderToGoogleSheets(orderRecord);
+      if (!sheetResult.success) {
+        console.warn('[API Order] Google Sheets save warning:', sheetResult.message);
+      } else {
+        console.log('[API Order] Google Sheets order saved successfully:', orderId);
+      }
+    } catch (sheetErr) {
+      console.error('[API Order] Google Sheets background sync error:', sheetErr);
+    }
 
     // Determine host base URL for payment callbacks
     const protocol = req.headers.get('x-forwarded-proto') || 'http';
