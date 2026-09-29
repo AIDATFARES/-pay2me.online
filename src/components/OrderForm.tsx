@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { CustomerInfo, DeviceCount, SubscriptionPlanId } from '@/types/order';
 import { PlanSelector } from './PlanSelector';
 import { DeviceSelector } from './DeviceSelector';
@@ -23,6 +23,20 @@ export const OrderForm: React.FC = () => {
   const [errors, setErrors] = useState<Partial<Record<keyof CustomerInfo, string>>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
+
+  // Ensure isSubmitting is never locked when navigating back via browser back or cache
+  useEffect(() => {
+    setIsSubmitting(false);
+
+    const handlePageShow = (e: PageTransitionEvent) => {
+      setIsSubmitting(false);
+    };
+
+    window.addEventListener('pageshow', handlePageShow);
+    return () => {
+      window.removeEventListener('pageshow', handlePageShow);
+    };
+  }, []);
 
   const handleSelectPlan = (plan: SubscriptionPlanId) => {
     setSelectedPlan(plan);
@@ -114,8 +128,10 @@ export const OrderForm: React.FC = () => {
 
       if (data.checkoutUrl) {
         window.location.href = data.checkoutUrl;
+        setTimeout(() => setIsSubmitting(false), 2500);
       } else {
         window.location.href = `/confirmation?orderId=${encodeURIComponent(data.orderId || '')}`;
+        setTimeout(() => setIsSubmitting(false), 2500);
       }
     } catch (err: any) {
       console.error('Order submission network error:', err);

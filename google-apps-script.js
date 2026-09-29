@@ -34,6 +34,9 @@ function doPost(e) {
       data.paymentStatus || 'Pending'
     ]);
 
+    // Force Google Sheets to write and flush the row immediately to disk
+    SpreadsheetApp.flush();
+
     return ContentService.createTextOutput(
       JSON.stringify({ status: 'success', orderId: data.orderId })
     ).setMimeType(ContentService.MimeType.JSON);
