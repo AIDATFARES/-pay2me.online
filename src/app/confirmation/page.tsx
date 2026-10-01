@@ -80,16 +80,24 @@ function InvoiceContent() {
 
   const methodMeta = METHOD_LABELS[method] || METHOD_LABELS.card;
   const isWhatsAppMethod = method === 'paypal' || method === 'bank_transfer' || method === 'cash_app';
+  const requiresScreenshot = isWhatsAppMethod || isTrial;
 
   // Construct prefilled WhatsApp message
   const whatsappText = encodeURIComponent(
-    `Hello! I just placed an order on pay2me.online.\n\n` +
-      `📋 Order/Invoice: ${orderId}\n` +
-      `📦 Plan: ${planName} (${devices} Device${Number(devices) > 1 ? 's' : ''})\n` +
-      `💰 Amount Due: $${price} USD\n` +
-      `💳 Payment Method: ${methodMeta.name}\n` +
-      (customerName ? `👤 Customer: ${customerName}\n` : '') +
-      `\nI have taken a screenshot of my invoice. Please send me the payment instructions!`
+    isTrial
+      ? `Hello! I just requested a 24-Hour Free Trial on pay2me.online.\n\n` +
+        `📋 Invoice / Reference: ${orderId}\n` +
+        `📦 Plan: 24-Hour Free Trial (1 Device)\n` +
+        (customerName ? `👤 Customer: ${customerName}\n` : '') +
+        (customerDevice ? `📱 Device: ${customerDevice}\n` : '') +
+        `\nI have taken a screenshot of my invoice. Please confirm and activate my free trial line!`
+      : `Hello! I just placed an order on pay2me.online.\n\n` +
+        `📋 Order/Invoice: ${orderId}\n` +
+        `📦 Plan: ${planName} (${devices} Device${Number(devices) > 1 ? 's' : ''})\n` +
+        `💰 Amount Due: $${price} USD\n` +
+        `💳 Payment Method: ${methodMeta.name}\n` +
+        (customerName ? `👤 Customer: ${customerName}\n` : '') +
+        `\nI have taken a screenshot of my invoice. Please send me the payment instructions!`
   );
 
   const whatsappUrl = `https://wa.me/?text=${whatsappText}`;
@@ -148,7 +156,7 @@ function InvoiceContent() {
         </div>
 
         {/* Action Alert Banner: Screenshot Requirement */}
-        {isWhatsAppMethod && (
+        {requiresScreenshot && (
           <div className="bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 p-4 sm:p-5 flex items-start gap-3 shadow-inner">
             <div className="p-2 rounded-xl bg-slate-950/10 flex-shrink-0 mt-0.5">
               <Camera className="w-6 h-6 text-slate-950" />
@@ -158,7 +166,15 @@ function InvoiceContent() {
                 📸 Step 1: Take a Screenshot of this Invoice
               </strong>
               <p className="mt-0.5 text-slate-900/90 leading-relaxed font-medium">
-                Please <strong>take a screenshot of this page right now</strong> and send it to our seller on WhatsApp. We will provide your {methodMeta.name} payment details and activate your subscription immediately after!
+                {isTrial ? (
+                  <>
+                    Please <strong>take a screenshot of this invoice page right now</strong> and send it to our seller on WhatsApp. Your 24-hour free trial line will be activated immediately upon receiving your screenshot!
+                  </>
+                ) : (
+                  <>
+                    Please <strong>take a screenshot of this page right now</strong> and send it to our seller on WhatsApp. We will provide your {methodMeta.name} payment details and activate your subscription immediately after!
+                  </>
+                )}
               </p>
             </div>
           </div>
@@ -335,11 +351,25 @@ function InvoiceContent() {
 
           {/* Free Trial Instructions */}
           {isTrial && (
-            <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-950 text-xs sm:text-sm leading-relaxed">
-              <strong className="block font-bold text-emerald-900 mb-1">
-                🎉 Free Trial Request Confirmed!
-              </strong>
-              Please message our agent on WhatsApp with your reference <strong>{orderId}</strong> to receive your instant trial credentials.
+            <div className="p-4 sm:p-5 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-950 space-y-2">
+              <h3 className="text-sm font-bold flex items-center gap-2 text-emerald-900">
+                <Gift className="w-4 h-4 text-emerald-700" />
+                How to Activate Your 24-Hour Free Trial:
+              </h3>
+              <ol className="text-xs sm:text-sm text-emerald-900/90 list-decimal pl-5 space-y-1.5 leading-relaxed font-medium">
+                <li>
+                  <strong>Take a screenshot</strong> of this confirmation invoice showing reference <strong>{orderId}</strong>.
+                </li>
+                <li>
+                  Click the <strong>"Send Screenshot on WhatsApp"</strong> button below.
+                </li>
+                <li>
+                  Send the screenshot to our agent on WhatsApp to confirm your request.
+                </li>
+                <li>
+                  Receive your instant login credentials and enjoy 24 hours of premium service!
+                </li>
+              </ol>
             </div>
           )}
 
@@ -353,7 +383,7 @@ function InvoiceContent() {
             >
               <MessageCircle className="w-6 h-6 fill-white flex-shrink-0" />
               <span>
-                {isWhatsAppMethod ? 'Send Screenshot on WhatsApp' : 'Contact Support on WhatsApp'}
+                {requiresScreenshot ? 'Send Screenshot on WhatsApp' : 'Contact Support on WhatsApp'}
               </span>
             </a>
 
