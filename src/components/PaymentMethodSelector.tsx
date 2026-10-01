@@ -38,9 +38,9 @@ export const PaymentMethodSelector: React.FC<PaymentMethodSelectorProps> = ({
     {
       id: 'card',
       title: 'Credit / Debit Card & Crypto',
-      subtitle: 'Visa, Mastercard, USDT, Crypto',
-      badge: 'Instant Automated',
-      badgeColor: 'bg-emerald-100 text-emerald-800 border-emerald-200',
+      subtitle: 'Visa, Mastercard, USDT (ID Verification Required)',
+      badge: 'ID Verification Required',
+      badgeColor: 'bg-indigo-100 text-indigo-800 border-indigo-200',
       icon: <CreditCard className="w-5 h-5 text-indigo-600" />,
     },
     {
@@ -179,6 +179,8 @@ export const PaymentMethodSelector: React.FC<PaymentMethodSelectorProps> = ({
             ? 'bg-rose-50/90 border-rose-300 ring-2 ring-rose-200 text-rose-950'
             : isAgreed
             ? 'bg-emerald-50/80 border-emerald-300 ring-1 ring-emerald-400/25 text-emerald-950'
+            : selectedMethod === 'card'
+            ? 'bg-indigo-50/70 border-indigo-200 text-indigo-950'
             : 'bg-amber-50/80 border-amber-200 text-amber-950'
         )}
       >
@@ -187,16 +189,16 @@ export const PaymentMethodSelector: React.FC<PaymentMethodSelectorProps> = ({
             type="checkbox"
             checked={isAgreed}
             onChange={(e) => onToggleAgreement(e.target.checked)}
-            className="mt-0.5 w-4 h-4 rounded border-amber-400 text-indigo-600 focus:ring-indigo-500 cursor-pointer flex-shrink-0"
+            className="mt-0.5 w-4 h-4 rounded border-indigo-400 text-indigo-600 focus:ring-indigo-500 cursor-pointer flex-shrink-0"
           />
           <div className="text-xs leading-relaxed flex-1">
             {selectedMethod === 'card' ? (
               <p>
                 <strong className="font-bold text-slate-900 block mb-0.5 flex items-center gap-1.5">
-                  <Zap className="w-3.5 h-3.5 text-emerald-600" />
-                  CardToUSDT Checkout Agreement <span className="text-rose-500">*</span>
+                  <ShieldCheck className="w-3.5 h-3.5 text-indigo-600" />
+                  Identity Verification (KYC) Required for Card Payments <span className="text-rose-500">*</span>
                 </strong>
-                I confirm that I have read this and agree that I will be forwarded to the secure <strong>CardToUSDT payment page</strong> in a new browser tab to complete my payment.
+                <strong>Please Note:</strong> Card payments require <strong>identity verification (ID / KYC verification)</strong> on the payment gateway. I confirm that I have read this and agree that I will be redirected to the secure CardToUSDT payment page in a new tab, and <strong>I agree to complete the required identity verification</strong> to complete my card payment.
               </p>
             ) : (
               <p>

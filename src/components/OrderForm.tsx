@@ -116,7 +116,11 @@ export const OrderForm: React.FC = () => {
     // MANDATORY CHECKBOX 2: Payment Method Agreement (or Free Trial Agreement)
     if (selectedPlan !== 'free_trial') {
       if (!methodAgreed) {
-        setMethodError('You must click this checkbox confirming that you have read and agreed to this payment step.');
+        if (selectedMethod === 'card') {
+          setMethodError('Card payments require identity verification. You must click this checkbox confirming that you agree to complete identity verification.');
+        } else {
+          setMethodError('You must click this checkbox confirming that you have read and agreed to this payment step.');
+        }
         hasCheckboxError = true;
       } else {
         setMethodError(null);

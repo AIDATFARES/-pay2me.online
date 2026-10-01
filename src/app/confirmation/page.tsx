@@ -309,21 +309,27 @@ function InvoiceContent() {
           )}
 
           {/* Card / Crypto (CardToUSDT) CTA if applicable */}
-          {method === 'card' && checkoutUrl && (
-            <div className="p-4 rounded-2xl bg-indigo-50 border border-indigo-200 space-y-3 text-center">
-              <p className="text-xs text-indigo-900 font-medium">
-                Your secure CardToUSDT payment window was opened. If you closed it or it didn't open automatically, click below:
+          {method === 'card' && (
+            <div className="p-4 sm:p-5 rounded-2xl bg-indigo-50 border border-indigo-200 text-indigo-950 space-y-2.5 text-center">
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-indigo-100 text-indigo-800 text-xs font-bold border border-indigo-200">
+                <ShieldCheck className="w-4 h-4 text-indigo-600" />
+                <span>Identity Verification (KYC) Required</span>
+              </div>
+              <p className="text-xs text-indigo-900 leading-relaxed font-medium">
+                Card payments require standard identity verification (ID / KYC check) on the CardToUSDT payment gateway. Please ensure you have your ID ready to finalize your transaction.
               </p>
-              <a
-                href={checkoutUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white font-bold text-base shadow-md shadow-indigo-500/20 transition-all flex items-center justify-center gap-2"
-              >
-                <CreditCard className="w-5 h-5" />
-                <span>Open CardToUSDT Checkout</span>
-                <ExternalLink className="w-4 h-4 ml-1 opacity-80" />
-              </a>
+              {checkoutUrl && (
+                <a
+                  href={checkoutUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white font-bold text-base shadow-md shadow-indigo-500/20 transition-all flex items-center justify-center gap-2"
+                >
+                  <CreditCard className="w-5 h-5" />
+                  <span>Open CardToUSDT Checkout</span>
+                  <ExternalLink className="w-4 h-4 ml-1 opacity-80" />
+                </a>
+              )}
             </div>
           )}
 
