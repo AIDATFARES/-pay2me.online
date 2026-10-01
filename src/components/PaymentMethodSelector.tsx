@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { PaymentMethodId, SubscriptionPlanId } from '@/types/order';
-import { CreditCard, Landmark, MessageCircle, Zap, ShieldCheck } from 'lucide-react';
+import { CreditCard, Landmark, MessageCircle, Zap, ShieldCheck, ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface PaymentMethodSelectorProps {
@@ -29,6 +29,8 @@ export const PaymentMethodSelector: React.FC<PaymentMethodSelectorProps> = ({
   onToggleAgreement,
   error,
 }) => {
+  const [showAgreementDetails, setShowAgreementDetails] = useState<boolean>(false);
+
   // If Free Trial is selected, hide the payment method selector since no payment is required
   if (selectedPlan === 'free_trial') {
     return null;
@@ -103,6 +105,7 @@ export const PaymentMethodSelector: React.FC<PaymentMethodSelectorProps> = ({
                 onSelectMethod(option.id);
                 // Reset agreement when changing method so user explicitly confirms the new method
                 onToggleAgreement(false);
+                setShowAgreementDetails(false);
               }}
               className={cn(
                 'relative flex items-start gap-3 p-3.5 rounded-xl border text-left transition-all duration-150 outline-none select-none cursor-pointer',
@@ -161,49 +164,100 @@ export const PaymentMethodSelector: React.FC<PaymentMethodSelectorProps> = ({
         })}
       </div>
 
-      {/* Mandatory Checkbox Agreement Box (Must be clicked and agreed to) */}
+      {/* Mandatory Checkbox Agreement Box (Compact: reveals details on click) */}
       <div
+        role="button"
+        tabIndex={0}
+        onClick={() => setShowAgreementDetails((prev) => !prev)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            if ((e.target as HTMLElement).tagName !== 'INPUT') {
+              e.preventDefault();
+              setShowAgreementDetails((prev) => !prev);
+            }
+          }
+        }}
         className={cn(
-          'mt-3.5 p-3.5 rounded-xl border transition-all select-none',
+          'mt-3.5 p-3 sm:p-3.5 rounded-xl border transition-all duration-200 select-none cursor-pointer outline-none',
           error
             ? 'bg-rose-50/90 border-rose-300 ring-2 ring-rose-200 text-rose-950'
             : isAgreed
             ? 'bg-emerald-50/80 border-emerald-300 ring-1 ring-emerald-400/25 text-emerald-950'
             : selectedMethod === 'card'
-            ? 'bg-indigo-50/70 border-indigo-200 text-indigo-950'
-            : 'bg-amber-50/80 border-amber-200 text-amber-950'
+            ? 'bg-indigo-50/70 border-indigo-200 hover:border-indigo-300 text-indigo-950'
+            : 'bg-amber-50/80 border-amber-200 hover:border-amber-300 text-amber-950'
         )}
       >
-        <label className="flex items-start gap-2.5 cursor-pointer">
-          <input
-            type="checkbox"
-            checked={isAgreed}
-            onChange={(e) => onToggleAgreement(e.target.checked)}
-            className="mt-0.5 w-4 h-4 rounded border-indigo-400 text-indigo-600 focus:ring-indigo-500 cursor-pointer flex-shrink-0"
-          />
-          <div className="text-xs leading-relaxed flex-1">
+        {/* Compact Header: Checkbox, Title & Expand Indicator */}
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div
+              onClick={(e) => e.stopPropagation()}
+              className="flex items-center"
+            >
+              <input
+                type="checkbox"
+                id="payment-agreement-checkbox"
+                checked={isAgreed}
+                onChange={(e) => onToggleAgreement(e.target.checked)}
+                className="w-4 h-4 rounded border-indigo-400 text-indigo-600 focus:ring-indigo-500 cursor-pointer flex-shrink-0"
+              />
+            </div>
+            <div className="font-bold text-xs sm:text-sm text-slate-900 flex items-center gap-1.5 truncate">
+              {selectedMethod === 'card' ? (
+                <>
+                  <ShieldCheck className="w-4 h-4 text-indigo-600 shrink-0" />
+                  <span className="truncate">Identity Verification (KYC) Required for Card & Cash App Payments</span>
+                </>
+              ) : (
+                <>
+                  <MessageCircle className="w-4 h-4 text-[#25D366] shrink-0" />
+                  <span className="truncate">Screenshot Verification Agreement</span>
+                </>
+              )}
+              <span className="text-rose-500 shrink-0">*</span>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-1 text-slate-400 shrink-0">
+            <span className="text-[11px] sm:text-xs font-semibold text-slate-500">
+              {showAgreementDetails ? 'Hide' : 'Details'}
+            </span>
+            <ChevronDown
+              className={cn(
+                'w-4 h-4 transition-transform duration-200 text-slate-400',
+                showAgreementDetails && 'rotate-180 text-indigo-600'
+              )}
+            />
+          </div>
+        </div>
+
+        {/* Revealed Details: hidden initially, shown only when clicked */}
+        {showAgreementDetails && (
+          <div
+            className={cn(
+              'mt-2.5 pt-2.5 border-t text-xs text-slate-700 leading-relaxed animate-in fade-in slide-in-from-top-1 duration-200 pl-6 sm:pl-7',
+              isAgreed
+                ? 'border-emerald-200/80'
+                : selectedMethod === 'card'
+                ? 'border-indigo-200/80'
+                : 'border-amber-200/80'
+            )}
+          >
             {selectedMethod === 'card' ? (
               <p>
-                <strong className="font-bold text-slate-900 block mb-0.5 flex items-center gap-1.5">
-                  <ShieldCheck className="w-3.5 h-3.5 text-indigo-600" />
-                  Identity Verification (KYC) Required for Card & Cash App Payments <span className="text-rose-500">*</span>
-                </strong>
                 <strong>Please Note:</strong> Card and Cash App payments require <strong>identity verification (ID / KYC verification)</strong> on the payment gateway. I confirm that I have read this and agree that I will be redirected to the secure CardToUSDT payment page in a new tab, and <strong>I agree to complete the required identity verification</strong> to complete my card / Cash App payment.
               </p>
             ) : (
               <p>
-                <strong className="font-bold text-slate-900 block mb-0.5 flex items-center gap-1.5">
-                  <MessageCircle className="w-3.5 h-3.5 text-[#25D366]" />
-                  Screenshot Verification Agreement <span className="text-rose-500">*</span>
-                </strong>
                 I confirm that I have read this and agree that after clicking Pay, I will receive an official invoice page. I agree to <strong>take a screenshot of the invoice and send it to the seller on WhatsApp</strong> to receive {getMethodTitle()} and get instant setup.
               </p>
             )}
           </div>
-        </label>
+        )}
 
         {error && (
-          <p className="mt-2 text-xs font-semibold text-rose-600 flex items-center gap-1 pl-6">
+          <p className="mt-2 text-xs font-semibold text-rose-600 flex items-center gap-1 pl-6 sm:pl-7">
             <span>⚠️</span> {error}
           </p>
         )}
