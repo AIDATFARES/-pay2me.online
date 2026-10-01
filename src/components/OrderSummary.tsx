@@ -70,7 +70,7 @@ export const OrderSummary: React.FC<OrderSummaryProps> = ({
               <span>Payment Method</span>
               <span className="font-semibold text-slate-800 capitalize">
                 {selectedPaymentMethod === 'card'
-                  ? 'Card & Crypto'
+                  ? 'Card, Cash App & Crypto'
                   : selectedPaymentMethod === 'bank_transfer'
                   ? 'Bank Transfer'
                   : 'PayPal'}

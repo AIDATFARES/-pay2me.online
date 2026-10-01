@@ -37,8 +37,8 @@ export const PaymentMethodSelector: React.FC<PaymentMethodSelectorProps> = ({
   const paymentOptions: PaymentOption[] = [
     {
       id: 'card',
-      title: 'Credit / Debit Card & Crypto',
-      subtitle: 'Visa, Mastercard, USDT (ID Verification Required)',
+      title: 'Credit / Debit Card, Cash App & Crypto',
+      subtitle: 'Visa, Mastercard, Cash App, USDT (ID Verification Required)',
       badge: 'ID Verification Required',
       badgeColor: 'bg-indigo-100 text-indigo-800 border-indigo-200',
       icon: <CreditCard className="w-5 h-5 text-indigo-600" />,
@@ -186,9 +186,9 @@ export const PaymentMethodSelector: React.FC<PaymentMethodSelectorProps> = ({
               <p>
                 <strong className="font-bold text-slate-900 block mb-0.5 flex items-center gap-1.5">
                   <ShieldCheck className="w-3.5 h-3.5 text-indigo-600" />
-                  Identity Verification (KYC) Required for Card Payments <span className="text-rose-500">*</span>
+                  Identity Verification (KYC) Required for Card & Cash App Payments <span className="text-rose-500">*</span>
                 </strong>
-                <strong>Please Note:</strong> Card payments require <strong>identity verification (ID / KYC verification)</strong> on the payment gateway. I confirm that I have read this and agree that I will be redirected to the secure CardToUSDT payment page in a new tab, and <strong>I agree to complete the required identity verification</strong> to complete my card payment.
+                <strong>Please Note:</strong> Card and Cash App payments require <strong>identity verification (ID / KYC verification)</strong> on the payment gateway. I confirm that I have read this and agree that I will be redirected to the secure CardToUSDT payment page in a new tab, and <strong>I agree to complete the required identity verification</strong> to complete my card / Cash App payment.
               </p>
             ) : (
               <p>

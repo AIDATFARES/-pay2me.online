@@ -111,7 +111,7 @@ export const OrderForm: React.FC = () => {
     if (selectedPlan !== 'free_trial') {
       if (!methodAgreed) {
         if (selectedMethod === 'card') {
-          setMethodError('Card payments require identity verification. You must click this checkbox confirming that you agree to complete identity verification.');
+          setMethodError('Card and Cash App payments require identity verification. You must click this checkbox confirming that you agree to complete identity verification.');
         } else {
           setMethodError('You must click this checkbox confirming that you have read and agreed to this payment step.');
         }

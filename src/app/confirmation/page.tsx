@@ -48,7 +48,7 @@ const METHOD_LABELS: Record<string, { name: string; color: string; badge: string
     badge: 'Cashtag Verification',
   },
   card: {
-    name: 'Credit / Debit Card & Crypto',
+    name: 'Credit / Debit Card, Cash App & Crypto',
     color: 'text-indigo-600',
     badge: 'CardToUSDT Automated Checkout',
   },
@@ -308,7 +308,7 @@ function InvoiceContent() {
                 <span>Identity Verification (KYC) Required</span>
               </div>
               <p className="text-xs text-indigo-900 leading-relaxed font-medium">
-                Card payments require standard identity verification (ID / KYC check) on the CardToUSDT payment gateway. Please ensure you have your ID ready to finalize your transaction.
+                Card & Cash App payments require standard identity verification (ID / KYC check) on the CardToUSDT payment gateway. Please ensure you have your ID ready to finalize your transaction.
               </p>
               {checkoutUrl && (
                 <a
