@@ -217,21 +217,6 @@ export const CustomerForm: React.FC<CustomerFormProps> = ({
           )}
         </div>
 
-        {/* Marketing Consent (Optional) */}
-        <div className="pt-0.5 pl-1">
-          <label className="flex items-start gap-2 cursor-pointer select-none">
-            <input
-              type="checkbox"
-              name="marketingConsent"
-              checked={formData.marketingConsent}
-              onChange={(e) => onChange('marketingConsent', e.target.checked)}
-              className="mt-0.5 w-3.5 h-3.5 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
-            />
-            <span className="text-[11px] text-slate-500 leading-tight">
-              Keep me updated about special discounts and renewal promotions.
-            </span>
-          </label>
-        </div>
       </div>
     </section>
   );
