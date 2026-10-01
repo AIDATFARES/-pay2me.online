@@ -24,7 +24,7 @@ import {
 } from 'lucide-react';
 
 const PLAN_LABELS: Record<string, string> = {
-  free_trial: '24-Hour Free Trial',
+  free_trial: 'Free Trial',
   '1_month': '1 Month VIP Subscription',
   '3_months': '3 Months VIP Subscription',
   '6_months': '6 Months VIP Subscription',
@@ -85,9 +85,9 @@ function InvoiceContent() {
   // Construct prefilled WhatsApp message
   const whatsappText = encodeURIComponent(
     isTrial
-      ? `Hello! I just requested a 24-Hour Free Trial on pay2me.online.\n\n` +
+      ? `Hello! I just requested a Free Trial on pay2me.online.\n\n` +
         `📋 Invoice / Reference: ${orderId}\n` +
-        `📦 Plan: 24-Hour Free Trial (1 Device)\n` +
+        `📦 Plan: Free Trial (1 Device)\n` +
         (customerName ? `👤 Customer: ${customerName}\n` : '') +
         (customerDevice ? `📱 Device: ${customerDevice}\n` : '') +
         `\nI have taken a screenshot of my invoice. Please confirm and activate my free trial line!`
@@ -168,7 +168,7 @@ function InvoiceContent() {
               <p className="mt-0.5 text-slate-900/90 leading-relaxed font-medium">
                 {isTrial ? (
                   <>
-                    Please <strong>take a screenshot of this invoice page right now</strong> and send it to our seller on WhatsApp. Your 24-hour free trial line will be activated immediately upon receiving your screenshot!
+                    Please <strong>take a screenshot of this invoice page right now</strong> and send it to our seller on WhatsApp. Your free trial line will be activated immediately upon receiving your screenshot!
                   </>
                 ) : (
                   <>
@@ -354,7 +354,7 @@ function InvoiceContent() {
             <div className="p-4 sm:p-5 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-950 space-y-2">
               <h3 className="text-sm font-bold flex items-center gap-2 text-emerald-900">
                 <Gift className="w-4 h-4 text-emerald-700" />
-                How to Activate Your 24-Hour Free Trial:
+                How to Activate Your Free Trial:
               </h3>
               <ol className="text-xs sm:text-sm text-emerald-900/90 list-decimal pl-5 space-y-1.5 leading-relaxed font-medium">
                 <li>
@@ -367,7 +367,7 @@ function InvoiceContent() {
                   Send the screenshot to our agent on WhatsApp to confirm your request.
                 </li>
                 <li>
-                  Receive your instant login credentials and enjoy 24 hours of premium service!
+                  Receive your instant login credentials and enjoy premium service!
                 </li>
               </ol>
             </div>

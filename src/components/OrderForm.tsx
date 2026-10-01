@@ -276,9 +276,9 @@ export const OrderForm: React.FC = () => {
             <div className="text-xs leading-relaxed flex-1">
               <strong className="font-bold text-slate-900 block mb-0.5 flex items-center gap-1.5">
                 <Gift className="w-3.5 h-3.5 text-emerald-600" />
-                24-Hour Free Trial & Screenshot Confirmation <span className="text-rose-500">*</span>
+                Free Trial & Screenshot Confirmation <span className="text-rose-500">*</span>
               </strong>
-              I confirm that I have read this and agree that this is a 24-hour trial limited to 1 connection. I agree to <strong>take a screenshot of the invoice and send it to the seller on WhatsApp</strong> to confirm my free trial request and receive line activation.
+              I confirm that I have read this and agree that this is a free trial limited to 1 connection. I agree to <strong>take a screenshot of the invoice and send it to the seller on WhatsApp</strong> to confirm my free trial request and receive line activation.
             </div>
           </label>
           {trialError && (
