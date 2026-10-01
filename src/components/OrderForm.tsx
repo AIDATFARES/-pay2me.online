@@ -126,8 +126,15 @@ export const OrderForm: React.FC = () => {
         return;
       }
 
-      if (data.checkoutUrl) {
-        window.location.href = data.checkoutUrl;
+      if (data.isTrial || selectedPlan === 'free_trial') {
+        // Free trial: navigate directly to confirmation screen
+        window.location.href = data.checkoutUrl || `/confirmation?orderId=${encodeURIComponent(data.orderId || '')}&type=trial`;
+        setTimeout(() => setIsSubmitting(false), 2500);
+      } else if (data.checkoutUrl) {
+        // Paid order: open CardToUSDT hosted checkout in a new tab
+        window.open(data.checkoutUrl, '_blank');
+        // Display confirmation & instruction screen on current tab, passing checkoutUrl as backup
+        window.location.href = `/confirmation?orderId=${encodeURIComponent(data.orderId || '')}&checkoutUrl=${encodeURIComponent(data.checkoutUrl)}`;
         setTimeout(() => setIsSubmitting(false), 2500);
       } else {
         window.location.href = `/confirmation?orderId=${encodeURIComponent(data.orderId || '')}`;

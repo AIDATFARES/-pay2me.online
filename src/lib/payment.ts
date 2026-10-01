@@ -13,102 +13,112 @@ interface CheckoutResult {
   success: boolean;
   checkoutUrl: string;
   price: number;
+  webhookSecret?: string;
+  amountUsd?: number;
   error?: string;
 }
 
 /**
- * Creates CardToUSDT Checkout Session securely from backend.
- * Uses strict server-side price lookup (never trusts client price).
+ * Creates CardToUSDT Checkout Session according to official docs:
+ * POST https://api.cardtousdt.to/v2/checkout
+ *
+ * Requirements:
+ * - No API key
+ * - No library
+ * - Authoritative server-side fixed price lookup
+ * - Public HTTPS webhook URL contains only the dynamic order_id
  */
 export async function createCardToUsdtCheckout(params: CreateCheckoutParams): Promise<CheckoutResult> {
-  const { orderId, planId, deviceCount, customer, baseUrl } = params;
+  const { orderId, planId, deviceCount, customer } = params;
 
   // 1. Strictly look up the fixed price from the server-side price table
   const price = getFixedPrice(planId, deviceCount);
 
-  const apiKey = process.env.CARDTOUSDT_API_KEY;
-  const apiUrl = process.env.CARDTOUSDT_API_URL || 'https://api.cardtousdt.com/v1/checkout';
-  const merchantId = process.env.CARDTOUSDT_MERCHANT_ID;
+  // 2. Public HTTPS Webhook URL (CardToUSDT requires a public HTTPS hostname, never localhost)
+  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://www.pay2me.online').replace(/\/+$/, '');
+  const webhookUrl = `${siteUrl}/api/cardtousdt/webhook?order_id=${encodeURIComponent(orderId)}`;
 
-  // Plan display name
-  const planNames: Record<SubscriptionPlanId, string> = {
-    'free_trial': 'Free Trial',
-    '1_month': '1 Month IPTV Subscription',
-    '3_months': '3 Months IPTV Subscription',
-    '6_months': '6 Months IPTV Subscription',
-    '12_months': '12 Months IPTV Subscription',
-  };
-  const title = `${planNames[planId]} (${deviceCount} ${deviceCount === 1 ? 'Device' : 'Devices'})`;
+  const payoutAddress = process.env.CARDTOUSDT_PAYOUT_ADDRESS?.trim();
+  const checkoutApiUrl = 'https://api.cardtousdt.to/v2/checkout';
 
-  // Success / return URL (Opaque confirmation page)
-  const returnUrl = `${baseUrl}/confirmation?orderId=${encodeURIComponent(orderId)}`;
+  // 3. Verify payout wallet is configured and is a valid 42-char EVM address (0x...)
+  const isValidAddress = !!payoutAddress && /^0x[a-fA-F0-9]{40}$/.test(payoutAddress);
 
-  // If live CardToUSDT API credentials are configured, call the CardToUSDT API
-  if (apiKey) {
-    try {
-      const response = await fetch(apiUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${apiKey}`,
-          ...(merchantId ? { 'X-Merchant-ID': merchantId } : {}),
-        },
-        body: JSON.stringify({
-          order_id: orderId,
-          amount: price,
-          currency: 'USD',
-          title: title,
-          customer_email: customer.email,
-          customer_name: customer.fullName,
-          customer_phone: customer.whatsappNumber,
-          success_url: returnUrl,
-          cancel_url: returnUrl,
-        }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.text();
-        console.error('[CardToUSDT] API error response:', response.status, errorData);
-        return {
-          success: true,
-          checkoutUrl: returnUrl,
-          price,
-          error: `CardToUSDT returned status ${response.status}`,
-        };
-      }
-
-      const data = await response.json();
-      const checkoutUrl = data.checkout_url || data.payment_url || data.url || data.data?.checkout_url;
-
-      if (checkoutUrl) {
-        return {
-          success: true,
-          checkoutUrl,
-          price,
-        };
-      }
-
-      return {
-        success: true,
-        checkoutUrl: returnUrl,
-        price,
-      };
-    } catch (err: any) {
-      console.error('[CardToUSDT] Request failed:', err);
-      return {
-        success: true,
-        checkoutUrl: returnUrl,
-        price,
-        error: err.message,
-      };
-    }
+  if (!isValidAddress) {
+    const errorMsg = !payoutAddress
+      ? 'CardToUSDT payout address is not configured. Please add your EVM wallet address to CARDTOUSDT_PAYOUT_ADDRESS in .env.local to enable payment checkout.'
+      : 'Invalid CARDTOUSDT_PAYOUT_ADDRESS. It must be a valid 42-character EVM address starting with 0x (e.g. 0x...).';
+    console.error(`[CardToUSDT] ${errorMsg}`);
+    return {
+      success: false,
+      checkoutUrl: '',
+      price,
+      error: errorMsg,
+    };
   }
 
-  // Fallback mode when CARDTOUSDT_API_KEY is not yet populated in .env.local
-  return {
-    success: true,
-    checkoutUrl: returnUrl,
-    price,
-  };
-}
+  try {
+    const response = await fetch(checkoutApiUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        payout_address: payoutAddress,
+        amount: price,
+        currency: 'USD',
+        buyer_email: customer.email,
+        order_id: orderId,
+        webhook_url: webhookUrl,
+      }),
+    });
 
+    if (!response.ok) {
+      const errorData = await response.text();
+      console.error('[CardToUSDT] API error response:', response.status, errorData);
+      let errorMsg = `CardToUSDT error (HTTP ${response.status})`;
+      try {
+        const errObj = JSON.parse(errorData);
+        if (errObj.error?.message) {
+          errorMsg = `Payment gateway error: ${errObj.error.message}`;
+        }
+      } catch (_) {}
+
+      return {
+        success: false,
+        checkoutUrl: '',
+        price,
+        error: errorMsg,
+      };
+    }
+
+    const data = await response.json();
+    const checkoutUrl = data.checkout_url;
+
+    if (!checkoutUrl) {
+      console.error('[CardToUSDT] Missing checkout_url in API response:', data);
+      return {
+        success: false,
+        checkoutUrl: '',
+        price,
+        error: 'CardToUSDT did not return a valid checkout URL.',
+      };
+    }
+
+    return {
+      success: true,
+      checkoutUrl,
+      price,
+      webhookSecret: data.webhook_secret || undefined,
+      amountUsd: typeof data.amount_usd === 'number' ? data.amount_usd : price,
+    };
+  } catch (err: any) {
+    console.error('[CardToUSDT] Network request failed:', err);
+    return {
+      success: false,
+      checkoutUrl: '',
+      price,
+      error: err.message || 'Failed to connect to CardToUSDT payment gateway.',
+    };
+  }
+}

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { FIXED_PRICES, getFixedPrice, SUBSCRIPTION_PLANS } from '@/config/pricing';
+import { getFixedPrice, SUBSCRIPTION_PLANS } from '@/config/pricing';
 import { saveOrderToGoogleSheets } from '@/lib/sheets';
 import { createCardToUsdtCheckout } from '@/lib/payment';
 import { DeviceCount, OrderPayload, OrderRecord, SubscriptionPlanId } from '@/types/order';
@@ -19,7 +19,7 @@ export async function POST(req: NextRequest) {
 
     const { planId, deviceCount, customer } = body;
 
-    // Validate planId (now supports free_trial)
+    // Validate planId
     const validPlans: SubscriptionPlanId[] = ['free_trial', '1_month', '3_months', '6_months', '12_months'];
     if (!planId || !validPlans.includes(planId)) {
       return NextResponse.json(
@@ -83,59 +83,60 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // STRICT SECURITY: Retrieve fixed price from server-side price table
+    // STRICT SECURITY: Authoritative price determined solely by server-side table
     const fixedPrice = getFixedPrice(planId, deviceCount);
-    const isFree = fixedPrice === 0;
+    const isFree = fixedPrice === 0 || planId === 'free_trial';
     const orderId = generateOrderId(isFree);
     const timestamp = new Date().toISOString();
 
     const planObj = SUBSCRIPTION_PLANS.find((p) => p.id === planId);
     const planName = planObj ? planObj.name : planId;
 
-    // Structured row for Google Sheets
-    const orderRecord: OrderRecord = {
-      orderId,
-      timestamp,
-      fullName: fullName.trim(),
-      whatsappNumber: whatsappNumber.trim(),
-      email: email.trim().toLowerCase(),
-      country: country.trim(),
-      device: device.trim(),
-      planName,
-      deviceCount,
-      fixedPrice,
-      marketingConsent: marketingConsent ? 'Yes' : 'No',
-      paymentStatus: isFree ? 'Free Trial' : 'Pending',
-    };
-
-    // Save to Google Sheets (awaited to ensure serverless/lambda completion)
-    try {
-      const sheetResult = await saveOrderToGoogleSheets(orderRecord);
-      if (!sheetResult.success) {
-        console.warn('[API Order] Google Sheets save warning:', sheetResult.message);
-      } else {
-        console.log('[API Order] Google Sheets order saved successfully:', orderId);
-      }
-    } catch (sheetErr) {
-      console.error('[API Order] Google Sheets background sync error:', sheetErr);
-    }
-
-    // Determine host base URL for payment callbacks
-    const protocol = req.headers.get('x-forwarded-proto') || 'http';
-    const host = req.headers.get('host') || 'localhost:3000';
+    // Determine host base URL for payment callbacks and redirects
+    const protocol = req.headers.get('x-forwarded-proto') || 'https';
+    const host = req.headers.get('host') || 'www.pay2me.online';
     const baseUrl = `${protocol}://${host}`;
 
-    // For Free Trial ($0), bypass payment processor and redirect directly to confirmation
+    // ==========================================
+    // FLOW 1: FREE TRIAL (Completely separate from CardToUSDT)
+    // ==========================================
     if (isFree) {
+      const trialRecord: OrderRecord = {
+        orderId,
+        timestamp,
+        fullName: fullName.trim(),
+        whatsappNumber: whatsappNumber.trim(),
+        email: email.trim().toLowerCase(),
+        country: country.trim(),
+        device: device.trim(),
+        planName: 'Free Trial',
+        deviceCount: 1,
+        fixedPrice: 0,
+        marketingConsent: marketingConsent ? 'Yes' : 'No',
+        paymentStatus: 'Free Trial',
+      };
+
+      // Save to Google Sheets with Free Trial status (for manual admin fulfillment)
+      try {
+        await saveOrderToGoogleSheets(trialRecord);
+        console.log('[API Order] Free Trial recorded in Google Sheets:', orderId);
+      } catch (err) {
+        console.error('[API Order] Failed to record Free Trial to Google Sheets:', err);
+      }
+
+      // Bypass CardToUSDT and return confirmation URL
       return NextResponse.json({
         success: true,
         orderId,
         fixedPrice: 0,
+        isTrial: true,
         checkoutUrl: `${baseUrl}/confirmation?orderId=${encodeURIComponent(orderId)}&type=trial`,
       });
     }
 
-    // For paid subscriptions, create CardToUSDT checkout session using server-validated fixed price
+    // ==========================================
+    // FLOW 2: PAID ORDER (CardToUSDT hosted checkout)
+    // ==========================================
     const checkoutResult = await createCardToUsdtCheckout({
       orderId,
       planId,
@@ -151,10 +152,45 @@ export async function POST(req: NextRequest) {
       baseUrl,
     });
 
+    if (!checkoutResult.success || !checkoutResult.checkoutUrl) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: checkoutResult.error || 'Unable to create payment session. Please try again.',
+        },
+        { status: 502 }
+      );
+    }
+
+    // Structured initial record for Google Sheets with Pending status
+    const paidOrderRecord: OrderRecord = {
+      orderId,
+      timestamp,
+      fullName: fullName.trim(),
+      whatsappNumber: whatsappNumber.trim(),
+      email: email.trim().toLowerCase(),
+      country: country.trim(),
+      device: device.trim(),
+      planName,
+      deviceCount,
+      fixedPrice,
+      marketingConsent: marketingConsent ? 'Yes' : 'No',
+      paymentStatus: 'Pending',
+    };
+
+    // Save to Google Sheets as Pending (and store webhook_secret if returned by CardToUSDT)
+    try {
+      await saveOrderToGoogleSheets(paidOrderRecord, checkoutResult.webhookSecret);
+      console.log('[API Order] Paid order saved as Pending in Google Sheets:', orderId);
+    } catch (err) {
+      console.error('[API Order] Failed to record paid order to Google Sheets:', err);
+    }
+
     return NextResponse.json({
       success: true,
       orderId,
       fixedPrice,
+      isTrial: false,
       checkoutUrl: checkoutResult.checkoutUrl,
     });
   } catch (error: any) {
