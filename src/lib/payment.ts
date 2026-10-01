@@ -39,7 +39,7 @@ export async function createCardToUsdtCheckout(params: CreateCheckoutParams): Pr
   const webhookUrl = `${siteUrl}/api/cardtousdt/webhook?order_id=${encodeURIComponent(orderId)}`;
 
   const payoutAddress = (
-    process.env.CARDTOUSDT_PAYOUT_ADDRESS || '0xe7073eCc57F9b60f3A969878Fa67b541ec69dea8'
+    process.env.CARDTOUSDT_PAYOUT_ADDRESS || '0x9e1d2897A1afD31908d88cBAdFE4eD6300c8a27D'
   ).trim();
   const checkoutApiUrl = 'https://api.cardtousdt.to/v2/checkout';
 
