@@ -79,6 +79,16 @@ export const PaymentMethodSelector: React.FC<PaymentMethodSelectorProps> = ({
     }
   };
 
+  const handleAgreementCardClick = () => {
+    const nextAgreed = !isAgreed;
+    onToggleAgreement(nextAgreed);
+    if (nextAgreed) {
+      setShowAgreementDetails(true);
+    } else {
+      setShowAgreementDetails(false);
+    }
+  };
+
   return (
     <section className="mb-6 pt-2">
       <div className="flex items-center gap-2 mb-1">
@@ -164,16 +174,16 @@ export const PaymentMethodSelector: React.FC<PaymentMethodSelectorProps> = ({
         })}
       </div>
 
-      {/* Mandatory Checkbox Agreement Box (Compact: reveals details on click) */}
+      {/* Mandatory Checkbox Agreement Box (Pressing anywhere confirms and displays details) */}
       <div
         role="button"
         tabIndex={0}
-        onClick={() => setShowAgreementDetails((prev) => !prev)}
+        onClick={handleAgreementCardClick}
         onKeyDown={(e) => {
           if (e.key === 'Enter' || e.key === ' ') {
             if ((e.target as HTMLElement).tagName !== 'INPUT') {
               e.preventDefault();
-              setShowAgreementDetails((prev) => !prev);
+              handleAgreementCardClick();
             }
           }
         }}
@@ -199,7 +209,15 @@ export const PaymentMethodSelector: React.FC<PaymentMethodSelectorProps> = ({
                 type="checkbox"
                 id="payment-agreement-checkbox"
                 checked={isAgreed}
-                onChange={(e) => onToggleAgreement(e.target.checked)}
+                onChange={(e) => {
+                  const checked = e.target.checked;
+                  onToggleAgreement(checked);
+                  if (checked) {
+                    setShowAgreementDetails(true);
+                  } else {
+                    setShowAgreementDetails(false);
+                  }
+                }}
                 className="w-4 h-4 rounded border-indigo-400 text-indigo-600 focus:ring-indigo-500 cursor-pointer flex-shrink-0"
               />
             </div>
@@ -219,7 +237,22 @@ export const PaymentMethodSelector: React.FC<PaymentMethodSelectorProps> = ({
             </div>
           </div>
 
-          <div className="flex items-center gap-1 text-slate-400 shrink-0">
+          <div
+            role="button"
+            tabIndex={0}
+            onClick={(e) => {
+              e.stopPropagation();
+              setShowAgreementDetails((prev) => !prev);
+            }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                e.stopPropagation();
+                setShowAgreementDetails((prev) => !prev);
+              }
+            }}
+            className="flex items-center gap-1 text-slate-400 hover:text-slate-600 shrink-0 cursor-pointer p-0.5 rounded outline-none"
+          >
             <span className="text-[11px] sm:text-xs font-semibold text-slate-500">
               {showAgreementDetails ? 'Hide' : 'Details'}
             </span>
@@ -235,8 +268,9 @@ export const PaymentMethodSelector: React.FC<PaymentMethodSelectorProps> = ({
         {/* Revealed Details: hidden initially, shown only when clicked */}
         {showAgreementDetails && (
           <div
+            onClick={(e) => e.stopPropagation()}
             className={cn(
-              'mt-2.5 pt-2.5 border-t text-xs text-slate-700 leading-relaxed animate-in fade-in slide-in-from-top-1 duration-200 pl-6 sm:pl-7',
+              'mt-2.5 pt-2.5 border-t text-xs text-slate-700 leading-relaxed animate-in fade-in slide-in-from-top-1 duration-200 pl-6 sm:pl-7 select-text cursor-text',
               isAgreed
                 ? 'border-emerald-200/80'
                 : selectedMethod === 'card'

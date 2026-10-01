@@ -64,6 +64,17 @@ export const OrderForm: React.FC = () => {
     }
   };
 
+  const handleTrialCardClick = () => {
+    const nextAgreed = !trialAgreed;
+    setTrialAgreed(nextAgreed);
+    if (nextAgreed) {
+      setTrialError(null);
+      setShowTrialDetails(true);
+    } else {
+      setShowTrialDetails(false);
+    }
+  };
+
   const handleFieldChange = (field: keyof CustomerInfo, value: string | boolean) => {
     setCustomer((prev) => ({
       ...prev,
@@ -241,17 +252,17 @@ export const OrderForm: React.FC = () => {
         error={methodError}
       />
 
-      {/* Free Trial Mandatory Confirmation Checkbox (Compact: reveals details on click) */}
+      {/* Free Trial Mandatory Confirmation Checkbox (Pressing anywhere confirms and displays details) */}
       {selectedPlan === 'free_trial' && (
         <div
           role="button"
           tabIndex={0}
-          onClick={() => setShowTrialDetails((prev) => !prev)}
+          onClick={handleTrialCardClick}
           onKeyDown={(e) => {
             if (e.key === 'Enter' || e.key === ' ') {
-              if ((e.target as HTMLElement).tagName !== 'INPUT') {
+              if ((e.target as HTMLElement).tagName !== 'INPUT' && (e.target as HTMLElement).tagName !== 'BUTTON') {
                 e.preventDefault();
-                setShowTrialDetails((prev) => !prev);
+                handleTrialCardClick();
               }
             }
           }}
@@ -276,8 +287,14 @@ export const OrderForm: React.FC = () => {
                   id="trial-agreed-input"
                   checked={trialAgreed}
                   onChange={(e) => {
-                    setTrialAgreed(e.target.checked);
-                    if (e.target.checked) setTrialError(null);
+                    const checked = e.target.checked;
+                    setTrialAgreed(checked);
+                    if (checked) {
+                      setTrialError(null);
+                      setShowTrialDetails(true);
+                    } else {
+                      setShowTrialDetails(false);
+                    }
                   }}
                   className="w-4 h-4 rounded border-amber-400 text-indigo-600 focus:ring-indigo-500 cursor-pointer flex-shrink-0"
                 />
@@ -289,7 +306,22 @@ export const OrderForm: React.FC = () => {
               </div>
             </div>
 
-            <div className="flex items-center gap-1 text-slate-400 shrink-0">
+            <div
+              role="button"
+              tabIndex={0}
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowTrialDetails((prev) => !prev);
+              }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setShowTrialDetails((prev) => !prev);
+                }
+              }}
+              className="flex items-center gap-1 text-slate-400 hover:text-slate-600 shrink-0 cursor-pointer p-0.5 rounded outline-none"
+            >
               <span className="text-[11px] sm:text-xs font-semibold text-slate-500">
                 {showTrialDetails ? 'Hide' : 'Details'}
               </span>
@@ -305,8 +337,9 @@ export const OrderForm: React.FC = () => {
           {/* Revealed Details: hidden initially, shown only when clicked */}
           {showTrialDetails && (
             <div
+              onClick={(e) => e.stopPropagation()}
               className={cn(
-                'mt-2.5 pt-2.5 border-t text-xs text-slate-700 leading-relaxed animate-in fade-in slide-in-from-top-1 duration-200 pl-6 sm:pl-7',
+                'mt-2.5 pt-2.5 border-t text-xs text-slate-700 leading-relaxed animate-in fade-in slide-in-from-top-1 duration-200 pl-6 sm:pl-7 select-text cursor-text',
                 trialAgreed ? 'border-emerald-200/80' : 'border-amber-200/80'
               )}
             >
