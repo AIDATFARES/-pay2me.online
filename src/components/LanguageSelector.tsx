@@ -141,22 +141,26 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
 
   return (
     <div ref={dropdownRef} className={containerClasses}>
-      {/* Trigger Button Matching Screenshot (e.g. 🇺🇸 EN ⌵) */}
+      {/* Trigger Button with High Visibility & Contrast (e.g. 🇺🇸 EN ⌵) */}
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white hover:bg-slate-50 border border-slate-200/90 shadow-md hover:shadow-lg text-slate-800 text-xs sm:text-sm font-bold transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500/20 select-none"
+        className={
+          variant === 'floating'
+            ? 'flex items-center gap-2.5 px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 active:bg-black text-white text-xs sm:text-sm font-black border-2 border-indigo-500/40 shadow-2xl shadow-slate-950/35 ring-2 ring-white/60 transition-all cursor-pointer focus:outline-none focus:ring-4 focus:ring-indigo-500/50 select-none hover:scale-105 active:scale-95'
+            : 'flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-white text-xs sm:text-sm font-extrabold border border-slate-700 shadow-md hover:shadow-lg transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500/40 select-none'
+        }
         aria-haspopup="true"
         aria-expanded={isOpen}
       >
         <img
           src={`/flags/${currentLang.flagCode}.png`}
           alt={currentLang.name}
-          className="w-5 h-3.5 object-cover rounded-[2px] border border-black/15 shadow-2xs flex-shrink-0"
+          className="w-5 h-3.5 object-cover rounded-[2px] border border-white/20 shadow-xs flex-shrink-0"
         />
-        <span className="font-extrabold tracking-tight text-slate-900">{currentLang.shortCode}</span>
+        <span className="font-black tracking-tight text-white">{currentLang.shortCode}</span>
         <ChevronDown
-          className={`w-3.5 h-3.5 text-slate-500 transition-transform duration-150 ${
+          className={`w-3.5 h-3.5 text-indigo-300 transition-transform duration-150 ${
             isOpen ? (effectiveDirection === 'up' ? '' : 'rotate-180') : (effectiveDirection === 'up' ? 'rotate-180' : '')
           }`}
         />
