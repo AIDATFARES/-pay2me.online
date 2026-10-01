@@ -1,5 +1,6 @@
 export type SubscriptionPlanId = 'free_trial' | '1_month' | '3_months' | '6_months' | '12_months';
 export type DeviceCount = 1 | 2 | 3;
+export type PaymentMethodId = 'card' | 'paypal' | 'bank_transfer' | 'cash_app';
 
 export interface PlanOption {
   id: SubscriptionPlanId;
@@ -24,6 +25,7 @@ export interface OrderPayload {
   planId: SubscriptionPlanId;
   deviceCount: DeviceCount;
   customer: CustomerInfo;
+  paymentMethod?: PaymentMethodId;
 }
 
 export interface OrderRecord {
@@ -38,13 +40,15 @@ export interface OrderRecord {
   deviceCount: number;
   fixedPrice: number;
   marketingConsent: 'Yes' | 'No';
-  paymentStatus: 'Pending' | 'Completed' | 'Failed' | 'Free Trial';
+  paymentStatus: string;
+  paymentMethod?: string;
 }
 
 export interface CreateOrderResponse {
   success: boolean;
   orderId?: string;
   checkoutUrl?: string;
+  paymentMethod?: PaymentMethodId;
   error?: string;
   details?: Record<string, string>;
 }

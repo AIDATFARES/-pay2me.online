@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getFixedPrice, SUBSCRIPTION_PLANS } from '@/config/pricing';
 import { saveOrderToGoogleSheets } from '@/lib/sheets';
 import { createCardToUsdtCheckout } from '@/lib/payment';
-import { DeviceCount, OrderPayload, OrderRecord, SubscriptionPlanId } from '@/types/order';
+import { DeviceCount, OrderPayload, OrderRecord, PaymentMethodId, SubscriptionPlanId } from '@/types/order';
 
 export const dynamic = 'force-dynamic';
 
@@ -17,7 +17,7 @@ export async function POST(req: NextRequest) {
   try {
     const body: Partial<OrderPayload> = await req.json();
 
-    const { planId, deviceCount, customer } = body;
+    const { planId, deviceCount, customer, paymentMethod = 'card' } = body;
 
     // Validate planId
     const validPlans: SubscriptionPlanId[] = ['free_trial', '1_month', '3_months', '6_months', '12_months'];
@@ -83,6 +83,12 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Validate paymentMethod
+    const validMethods: PaymentMethodId[] = ['card', 'paypal', 'bank_transfer', 'cash_app'];
+    const selectedMethod: PaymentMethodId = validMethods.includes(paymentMethod as PaymentMethodId)
+      ? (paymentMethod as PaymentMethodId)
+      : 'card';
+
     // STRICT SECURITY: Authoritative price determined solely by server-side table
     const fixedPrice = getFixedPrice(planId, deviceCount);
     const isFree = fixedPrice === 0 || planId === 'free_trial';
@@ -98,7 +104,7 @@ export async function POST(req: NextRequest) {
     const baseUrl = `${protocol}://${host}`;
 
     // ==========================================
-    // FLOW 1: FREE TRIAL (Completely separate from CardToUSDT)
+    // FLOW 1: FREE TRIAL (Completely separate from payments)
     // ==========================================
     if (isFree) {
       const trialRecord: OrderRecord = {
@@ -114,6 +120,7 @@ export async function POST(req: NextRequest) {
         fixedPrice: 0,
         marketingConsent: marketingConsent ? 'Yes' : 'No',
         paymentStatus: 'Free Trial',
+        paymentMethod: 'free_trial',
       };
 
       // Save to Google Sheets with Free Trial status (for manual admin fulfillment)
@@ -124,18 +131,65 @@ export async function POST(req: NextRequest) {
         console.error('[API Order] Failed to record Free Trial to Google Sheets:', err);
       }
 
-      // Bypass CardToUSDT and return confirmation URL
+      // Bypass payment gateways and return confirmation URL
       return NextResponse.json({
         success: true,
         orderId,
         fixedPrice: 0,
         isTrial: true,
+        paymentMethod: 'free_trial',
         checkoutUrl: `${baseUrl}/confirmation?orderId=${encodeURIComponent(orderId)}&type=trial`,
       });
     }
 
     // ==========================================
-    // FLOW 2: PAID ORDER (CardToUSDT hosted checkout)
+    // FLOW 2: WHATSAPP-BASED PAYMENT METHODS (PayPal, Bank Transfer, Cash App)
+    // ==========================================
+    if (selectedMethod !== 'card') {
+      const methodLabels: Record<PaymentMethodId, string> = {
+        paypal: 'PayPal',
+        bank_transfer: 'Bank Transfer',
+        cash_app: 'Cash App',
+        card: 'Card',
+      };
+      const label = methodLabels[selectedMethod];
+
+      const manualOrderRecord: OrderRecord = {
+        orderId,
+        timestamp,
+        fullName: fullName.trim(),
+        whatsappNumber: whatsappNumber.trim(),
+        email: email.trim().toLowerCase(),
+        country: country.trim(),
+        device: device.trim(),
+        planName,
+        deviceCount,
+        fixedPrice,
+        marketingConsent: marketingConsent ? 'Yes' : 'No',
+        paymentStatus: `Pending (${label})`,
+        paymentMethod: selectedMethod,
+      };
+
+      // Save to Google Sheets with Pending (Method) status
+      try {
+        await saveOrderToGoogleSheets(manualOrderRecord);
+        console.log(`[API Order] Order saved in Google Sheets with status Pending (${label}):`, orderId);
+      } catch (err) {
+        console.error('[API Order] Failed to record manual order to Google Sheets:', err);
+      }
+
+      return NextResponse.json({
+        success: true,
+        orderId,
+        fixedPrice,
+        isTrial: false,
+        paymentMethod: selectedMethod,
+        checkoutUrl: null,
+      });
+    }
+
+    // ==========================================
+    // FLOW 3: AUTOMATED CARD / CRYPTO (CardToUSDT hosted checkout)
     // ==========================================
     const checkoutResult = await createCardToUsdtCheckout({
       orderId,
@@ -176,12 +230,13 @@ export async function POST(req: NextRequest) {
       fixedPrice,
       marketingConsent: marketingConsent ? 'Yes' : 'No',
       paymentStatus: 'Pending',
+      paymentMethod: 'card',
     };
 
     // Save to Google Sheets as Pending (and store webhook_secret if returned by CardToUSDT)
     try {
       await saveOrderToGoogleSheets(paidOrderRecord, checkoutResult.webhookSecret);
-      console.log('[API Order] Paid order saved as Pending in Google Sheets:', orderId);
+      console.log('[API Order] Paid card order saved as Pending in Google Sheets:', orderId);
     } catch (err) {
       console.error('[API Order] Failed to record paid order to Google Sheets:', err);
     }
@@ -191,6 +246,7 @@ export async function POST(req: NextRequest) {
       orderId,
       fixedPrice,
       isTrial: false,
+      paymentMethod: 'card',
       checkoutUrl: checkoutResult.checkoutUrl,
     });
   } catch (error: any) {

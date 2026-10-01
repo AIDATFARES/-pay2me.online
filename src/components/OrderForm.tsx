@@ -1,15 +1,17 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { CustomerInfo, DeviceCount, SubscriptionPlanId } from '@/types/order';
+import { CustomerInfo, DeviceCount, PaymentMethodId, SubscriptionPlanId } from '@/types/order';
 import { PlanSelector } from './PlanSelector';
 import { DeviceSelector } from './DeviceSelector';
 import { CustomerForm } from './CustomerForm';
+import { PaymentMethodSelector } from './PaymentMethodSelector';
 import { OrderSummary } from './OrderSummary';
 
 export const OrderForm: React.FC = () => {
   const [selectedPlan, setSelectedPlan] = useState<SubscriptionPlanId>('12_months');
   const [selectedDevices, setSelectedDevices] = useState<DeviceCount>(1);
+  const [selectedMethod, setSelectedMethod] = useState<PaymentMethodId>('card');
 
   const [customer, setCustomer] = useState<CustomerInfo>({
     fullName: '',
@@ -115,6 +117,7 @@ export const OrderForm: React.FC = () => {
           planId: selectedPlan,
           deviceCount: selectedDevices,
           customer,
+          paymentMethod: selectedPlan === 'free_trial' ? undefined : selectedMethod,
         }),
       });
 
@@ -126,18 +129,34 @@ export const OrderForm: React.FC = () => {
         return;
       }
 
+      // Query params for the rich invoice confirmation page
+      const invoiceParams = new URLSearchParams({
+        orderId: data.orderId || '',
+        method: selectedPlan === 'free_trial' ? 'trial' : (data.paymentMethod || selectedMethod),
+        plan: selectedPlan,
+        devices: String(selectedDevices),
+        price: String(data.fixedPrice ?? 0),
+        name: customer.fullName.trim(),
+        email: customer.email.trim(),
+        phone: customer.whatsappNumber.trim(),
+        country: customer.country,
+        device: customer.device,
+      });
+
       if (data.isTrial || selectedPlan === 'free_trial') {
         // Free trial: navigate directly to confirmation screen
-        window.location.href = data.checkoutUrl || `/confirmation?orderId=${encodeURIComponent(data.orderId || '')}&type=trial`;
+        invoiceParams.set('type', 'trial');
+        window.location.href = `/confirmation?${invoiceParams.toString()}`;
         setTimeout(() => setIsSubmitting(false), 2500);
-      } else if (data.checkoutUrl) {
-        // Paid order: open CardToUSDT hosted checkout in a new tab
+      } else if (data.paymentMethod === 'card' && data.checkoutUrl) {
+        // Paid CardToUSDT order: open hosted checkout in a new tab
         window.open(data.checkoutUrl, '_blank');
-        // Display confirmation & instruction screen on current tab, passing checkoutUrl as backup
-        window.location.href = `/confirmation?orderId=${encodeURIComponent(data.orderId || '')}&checkoutUrl=${encodeURIComponent(data.checkoutUrl)}`;
+        invoiceParams.set('checkoutUrl', data.checkoutUrl);
+        window.location.href = `/confirmation?${invoiceParams.toString()}`;
         setTimeout(() => setIsSubmitting(false), 2500);
       } else {
-        window.location.href = `/confirmation?orderId=${encodeURIComponent(data.orderId || '')}`;
+        // PayPal / Bank Transfer / Cash App: direct to invoice page with WhatsApp screenshot instructions
+        window.location.href = `/confirmation?${invoiceParams.toString()}`;
         setTimeout(() => setIsSubmitting(false), 2500);
       }
     } catch (err: any) {
@@ -169,10 +188,18 @@ export const OrderForm: React.FC = () => {
         onChange={handleFieldChange}
       />
 
+      {/* Step 4: Payment Method Selector (Only for paid plans) */}
+      <PaymentMethodSelector
+        selectedPlan={selectedPlan}
+        selectedMethod={selectedMethod}
+        onSelectMethod={(method) => setSelectedMethod(method)}
+      />
+
       {/* Order Summary & Submit */}
       <OrderSummary
         selectedPlan={selectedPlan}
         selectedDevices={selectedDevices}
+        selectedPaymentMethod={selectedMethod}
         isSubmitting={isSubmitting}
         onSubmit={handleSubmit}
         apiError={apiError}
@@ -180,4 +207,3 @@ export const OrderForm: React.FC = () => {
     </div>
   );
 };
-
