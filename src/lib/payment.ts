@@ -38,7 +38,9 @@ export async function createCardToUsdtCheckout(params: CreateCheckoutParams): Pr
   const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://www.pay2me.online').replace(/\/+$/, '');
   const webhookUrl = `${siteUrl}/api/cardtousdt/webhook?order_id=${encodeURIComponent(orderId)}`;
 
-  const payoutAddress = process.env.CARDTOUSDT_PAYOUT_ADDRESS?.trim();
+  const payoutAddress = (
+    process.env.CARDTOUSDT_PAYOUT_ADDRESS || '0xe7073eCc57F9b60f3A969878Fa67b541ec69dea8'
+  ).trim();
   const checkoutApiUrl = 'https://api.cardtousdt.to/v2/checkout';
 
   // 3. Verify payout wallet is configured and is a valid 42-char EVM address (0x...)
