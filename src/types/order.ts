@@ -19,6 +19,7 @@ export interface CustomerInfo {
   country: string;
   device: string;
   marketingConsent: boolean;
+  termsAgreed?: boolean;
 }
 
 export interface OrderPayload {
@@ -26,6 +27,7 @@ export interface OrderPayload {
   deviceCount: DeviceCount;
   customer: CustomerInfo;
   paymentMethod?: PaymentMethodId;
+  methodAgreed?: boolean;
 }
 
 export interface OrderRecord {

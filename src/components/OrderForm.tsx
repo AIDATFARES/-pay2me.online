@@ -7,11 +7,20 @@ import { DeviceSelector } from './DeviceSelector';
 import { CustomerForm } from './CustomerForm';
 import { PaymentMethodSelector } from './PaymentMethodSelector';
 import { OrderSummary } from './OrderSummary';
+import { Gift } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 export const OrderForm: React.FC = () => {
   const [selectedPlan, setSelectedPlan] = useState<SubscriptionPlanId>('12_months');
   const [selectedDevices, setSelectedDevices] = useState<DeviceCount>(1);
   const [selectedMethod, setSelectedMethod] = useState<PaymentMethodId>('card');
+
+  // Interactive Checkbox Agreements
+  const [methodAgreed, setMethodAgreed] = useState<boolean>(false);
+  const [methodError, setMethodError] = useState<string | null>(null);
+
+  const [trialAgreed, setTrialAgreed] = useState<boolean>(false);
+  const [trialError, setTrialError] = useState<string | null>(null);
 
   const [customer, setCustomer] = useState<CustomerInfo>({
     fullName: '',
@@ -20,6 +29,7 @@ export const OrderForm: React.FC = () => {
     country: '',
     device: '',
     marketingConsent: false,
+    termsAgreed: false,
   });
 
   const [errors, setErrors] = useState<Partial<Record<keyof CustomerInfo, string>>>({});
@@ -42,6 +52,11 @@ export const OrderForm: React.FC = () => {
 
   const handleSelectPlan = (plan: SubscriptionPlanId) => {
     setSelectedPlan(plan);
+    setMethodAgreed(false);
+    setMethodError(null);
+    setTrialAgreed(false);
+    setTrialError(null);
+
     if (plan === 'free_trial') {
       setSelectedDevices(1);
     }
@@ -63,6 +78,7 @@ export const OrderForm: React.FC = () => {
 
   const validate = (): boolean => {
     const newErrors: Partial<Record<keyof CustomerInfo, string>> = {};
+    let hasCheckboxError = false;
 
     if (!customer.fullName.trim()) {
       newErrors.fullName = 'Please enter your full name.';
@@ -91,8 +107,37 @@ export const OrderForm: React.FC = () => {
       newErrors.device = 'Please select the device you will use.';
     }
 
+    // MANDATORY CHECKBOX 1: Terms Agreement in CustomerForm
+    if (!customer.termsAgreed) {
+      newErrors.termsAgreed = 'You must click this checkbox confirming that you have read and agreed to the terms.';
+      hasCheckboxError = true;
+    }
+
+    // MANDATORY CHECKBOX 2: Payment Method Agreement (or Free Trial Agreement)
+    if (selectedPlan !== 'free_trial') {
+      if (!methodAgreed) {
+        setMethodError('You must click this checkbox confirming that you have read and agreed to this payment step.');
+        hasCheckboxError = true;
+      } else {
+        setMethodError(null);
+      }
+    } else {
+      if (!trialAgreed) {
+        setTrialError('You must click this checkbox confirming that you have read and agreed to the Free Trial conditions.');
+        hasCheckboxError = true;
+      } else {
+        setTrialError(null);
+      }
+    }
+
     setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+
+    const hasFieldErrors = Object.keys(newErrors).length > 0;
+    if (hasCheckboxError) {
+      setApiError('Please ensure each required confirmation checkbox has been clicked and agreed to.');
+    }
+
+    return !hasFieldErrors && !hasCheckboxError;
   };
 
   const handleSubmit = async () => {
@@ -118,6 +163,7 @@ export const OrderForm: React.FC = () => {
           deviceCount: selectedDevices,
           customer,
           paymentMethod: selectedPlan === 'free_trial' ? undefined : selectedMethod,
+          methodAgreed: true,
         }),
       });
 
@@ -193,7 +239,51 @@ export const OrderForm: React.FC = () => {
         selectedPlan={selectedPlan}
         selectedMethod={selectedMethod}
         onSelectMethod={(method) => setSelectedMethod(method)}
+        isAgreed={methodAgreed}
+        onToggleAgreement={(agreed) => {
+          setMethodAgreed(agreed);
+          if (agreed) setMethodError(null);
+        }}
+        error={methodError}
       />
+
+      {/* Free Trial Mandatory Confirmation Checkbox */}
+      {selectedPlan === 'free_trial' && (
+        <div
+          className={cn(
+            'mb-6 p-3.5 rounded-xl border transition-all select-none',
+            trialError
+              ? 'bg-rose-50/90 border-rose-300 ring-2 ring-rose-200 text-rose-950'
+              : trialAgreed
+              ? 'bg-emerald-50/80 border-emerald-300 text-emerald-950'
+              : 'bg-amber-50/80 border-amber-200 text-amber-950'
+          )}
+        >
+          <label className="flex items-start gap-2.5 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={trialAgreed}
+              onChange={(e) => {
+                setTrialAgreed(e.target.checked);
+                if (e.target.checked) setTrialError(null);
+              }}
+              className="mt-0.5 w-4 h-4 rounded border-amber-400 text-indigo-600 focus:ring-indigo-500 cursor-pointer flex-shrink-0"
+            />
+            <div className="text-xs leading-relaxed flex-1">
+              <strong className="font-bold text-slate-900 block mb-0.5 flex items-center gap-1.5">
+                <Gift className="w-3.5 h-3.5 text-emerald-600" />
+                24-Hour Free Trial Confirmation <span className="text-rose-500">*</span>
+              </strong>
+              I confirm that I have read this and agree that this is a 24-hour trial limited to 1 connection. I agree to message the seller on WhatsApp with my reference code for manual line activation.
+            </div>
+          </label>
+          {trialError && (
+            <p className="mt-2 text-xs font-semibold text-rose-600 flex items-center gap-1 pl-6">
+              <span>⚠️</span> {trialError}
+            </p>
+          )}
+        </div>
+      )}
 
       {/* Order Summary & Submit */}
       <OrderSummary

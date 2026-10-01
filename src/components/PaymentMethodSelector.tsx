@@ -1,12 +1,15 @@
 import React from 'react';
 import { PaymentMethodId, SubscriptionPlanId } from '@/types/order';
-import { CreditCard, Landmark, DollarSign, MessageCircle, ShieldCheck, Zap } from 'lucide-react';
+import { CreditCard, Landmark, DollarSign, MessageCircle, Zap, ShieldCheck } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface PaymentMethodSelectorProps {
   selectedPlan: SubscriptionPlanId;
   selectedMethod: PaymentMethodId;
   onSelectMethod: (method: PaymentMethodId) => void;
+  isAgreed: boolean;
+  onToggleAgreement: (agreed: boolean) => void;
+  error?: string | null;
 }
 
 interface PaymentOption {
@@ -22,6 +25,9 @@ export const PaymentMethodSelector: React.FC<PaymentMethodSelectorProps> = ({
   selectedPlan,
   selectedMethod,
   onSelectMethod,
+  isAgreed,
+  onToggleAgreement,
+  error,
 }) => {
   // If Free Trial is selected, hide the payment method selector since no payment is required
   if (selectedPlan === 'free_trial') {
@@ -67,6 +73,20 @@ export const PaymentMethodSelector: React.FC<PaymentMethodSelectorProps> = ({
     },
   ];
 
+  const getMethodTitle = () => {
+    switch (selectedMethod) {
+      case 'paypal':
+        return 'our active PayPal email address';
+      case 'bank_transfer':
+        return 'our bank account IBAN / wire details';
+      case 'cash_app':
+        return 'our official $Cashtag';
+      case 'card':
+      default:
+        return 'CardToUSDT payment details';
+    }
+  };
+
   return (
     <section className="mb-6 pt-2">
       <div className="flex items-center gap-2 mb-1">
@@ -89,7 +109,11 @@ export const PaymentMethodSelector: React.FC<PaymentMethodSelectorProps> = ({
             <button
               type="button"
               key={option.id}
-              onClick={() => onSelectMethod(option.id)}
+              onClick={() => {
+                onSelectMethod(option.id);
+                // Reset agreement when changing method so user explicitly confirms the new method
+                onToggleAgreement(false);
+              }}
               className={cn(
                 'relative flex items-start gap-3 p-3.5 rounded-xl border text-left transition-all duration-150 outline-none select-none cursor-pointer',
                 isSelected
@@ -147,22 +171,49 @@ export const PaymentMethodSelector: React.FC<PaymentMethodSelectorProps> = ({
         })}
       </div>
 
-      {/* Dynamic Instruction Helper Box based on selection */}
-      <div className="mt-3 p-3 rounded-xl bg-slate-50 border border-slate-200/80 text-xs text-slate-600 flex items-start gap-2.5">
-        {selectedMethod === 'card' ? (
-          <>
-            <Zap className="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5" />
-            <p>
-              <strong>Automated Checkout:</strong> You will be forwarded to the secure CardToUSDT payment page in a new tab. Instant line activation upon payment.
-            </p>
-          </>
-        ) : (
-          <>
-            <MessageCircle className="w-4 h-4 text-[#25D366] flex-shrink-0 mt-0.5" />
-            <p>
-              <strong>Screenshot Verification:</strong> After clicking Pay, you will receive your official invoice. Send a screenshot to our WhatsApp support agent to receive {selectedMethod === 'paypal' ? 'our active PayPal email address' : selectedMethod === 'bank_transfer' ? 'our bank account IBAN/wire details' : 'our official $Cashtag'} and get instant setup.
-            </p>
-          </>
+      {/* Mandatory Checkbox Agreement Box (Must be clicked and agreed to) */}
+      <div
+        className={cn(
+          'mt-3.5 p-3.5 rounded-xl border transition-all select-none',
+          error
+            ? 'bg-rose-50/90 border-rose-300 ring-2 ring-rose-200 text-rose-950'
+            : isAgreed
+            ? 'bg-emerald-50/80 border-emerald-300 ring-1 ring-emerald-400/25 text-emerald-950'
+            : 'bg-amber-50/80 border-amber-200 text-amber-950'
+        )}
+      >
+        <label className="flex items-start gap-2.5 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={isAgreed}
+            onChange={(e) => onToggleAgreement(e.target.checked)}
+            className="mt-0.5 w-4 h-4 rounded border-amber-400 text-indigo-600 focus:ring-indigo-500 cursor-pointer flex-shrink-0"
+          />
+          <div className="text-xs leading-relaxed flex-1">
+            {selectedMethod === 'card' ? (
+              <p>
+                <strong className="font-bold text-slate-900 block mb-0.5 flex items-center gap-1.5">
+                  <Zap className="w-3.5 h-3.5 text-emerald-600" />
+                  CardToUSDT Checkout Agreement <span className="text-rose-500">*</span>
+                </strong>
+                I confirm that I have read this and agree that I will be forwarded to the secure <strong>CardToUSDT payment page</strong> in a new browser tab to complete my payment.
+              </p>
+            ) : (
+              <p>
+                <strong className="font-bold text-slate-900 block mb-0.5 flex items-center gap-1.5">
+                  <MessageCircle className="w-3.5 h-3.5 text-[#25D366]" />
+                  Screenshot Verification Agreement <span className="text-rose-500">*</span>
+                </strong>
+                I confirm that I have read this and agree that after clicking Pay, I will receive an official invoice page. I agree to <strong>take a screenshot of the invoice and send it to the seller on WhatsApp</strong> to receive {getMethodTitle()} and get instant setup.
+              </p>
+            )}
+          </div>
+        </label>
+
+        {error && (
+          <p className="mt-2 text-xs font-semibold text-rose-600 flex items-center gap-1 pl-6">
+            <span>⚠️</span> {error}
+          </p>
         )}
       </div>
     </section>
