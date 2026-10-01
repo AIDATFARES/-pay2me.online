@@ -54,13 +54,6 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    if (!whatsappNumber || whatsappNumber.trim().length < 6) {
-      return NextResponse.json(
-        { success: false, error: 'Please provide a valid WhatsApp number.' },
-        { status: 400 }
-      );
-    }
-
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!email || !emailRegex.test(email.trim())) {
       return NextResponse.json(
@@ -111,7 +104,7 @@ export async function POST(req: NextRequest) {
         orderId,
         timestamp,
         fullName: fullName.trim(),
-        whatsappNumber: whatsappNumber.trim(),
+        whatsappNumber: (whatsappNumber || '').trim(),
         email: email.trim().toLowerCase(),
         country: country.trim(),
         device: device.trim(),
@@ -157,7 +150,7 @@ export async function POST(req: NextRequest) {
         orderId,
         timestamp,
         fullName: fullName.trim(),
-        whatsappNumber: whatsappNumber.trim(),
+        whatsappNumber: (whatsappNumber || '').trim(),
         email: email.trim().toLowerCase(),
         country: country.trim(),
         device: device.trim(),
@@ -196,7 +189,7 @@ export async function POST(req: NextRequest) {
       deviceCount,
       customer: {
         fullName: fullName.trim(),
-        whatsappNumber: whatsappNumber.trim(),
+        whatsappNumber: (whatsappNumber || '').trim(),
         email: email.trim().toLowerCase(),
         country: country.trim(),
         device: device.trim(),
@@ -220,7 +213,7 @@ export async function POST(req: NextRequest) {
       orderId,
       timestamp,
       fullName: fullName.trim(),
-      whatsappNumber: whatsappNumber.trim(),
+      whatsappNumber: (whatsappNumber || '').trim(),
       email: email.trim().toLowerCase(),
       country: country.trim(),
       device: device.trim(),

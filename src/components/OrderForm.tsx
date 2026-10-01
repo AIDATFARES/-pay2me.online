@@ -88,12 +88,6 @@ export const OrderForm: React.FC = () => {
       newErrors.fullName = 'Full name must be at least 2 characters.';
     }
 
-    if (!customer.whatsappNumber.trim()) {
-      newErrors.whatsappNumber = 'Please enter your WhatsApp phone number.';
-    } else if (customer.whatsappNumber.replace(/[^0-9]/g, '').length < 6) {
-      newErrors.whatsappNumber = 'Please enter a valid phone number with country code.';
-    }
-
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!customer.email.trim()) {
       newErrors.email = 'Please enter your email address.';
@@ -184,7 +178,7 @@ export const OrderForm: React.FC = () => {
         price: String(data.fixedPrice ?? 0),
         name: customer.fullName.trim(),
         email: customer.email.trim(),
-        phone: customer.whatsappNumber.trim(),
+        phone: (customer.whatsappNumber || '').trim(),
         country: customer.country,
         device: customer.device,
       });

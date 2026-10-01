@@ -14,7 +14,7 @@ export interface PlanOption {
 
 export interface CustomerInfo {
   fullName: string;
-  whatsappNumber: string;
+  whatsappNumber?: string;
   email: string;
   country: string;
   device: string;
@@ -34,7 +34,7 @@ export interface OrderRecord {
   orderId: string;
   timestamp: string;
   fullName: string;
-  whatsappNumber: string;
+  whatsappNumber?: string;
   email: string;
   country: string;
   device: string;
