@@ -31,6 +31,8 @@ export const viewport: Viewport = {
   maximumScale: 5,
 };
 
+import { LanguageSelector } from '@/components/LanguageSelector';
+
 export default function RootLayout({
   children,
 }: {
@@ -40,6 +42,7 @@ export default function RootLayout({
     <html lang="en">
       <body className="antialiased selection:bg-indigo-100 selection:text-indigo-900">
         {children}
+        <LanguageSelector variant="floating" />
       </body>
     </html>
   );
