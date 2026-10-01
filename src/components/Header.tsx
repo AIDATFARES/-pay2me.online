@@ -1,22 +1,17 @@
 import React from 'react';
 import { Tv2, ShieldCheck, Zap } from 'lucide-react';
-import { LanguageSelector } from './LanguageSelector';
 
 export const Header: React.FC = () => {
   return (
-    <header className="pt-1 pb-6">
-      {/* Top Navbar: Brand Badge and Language Selector */}
-      <div className="flex items-center justify-between gap-3 mb-4">
-        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-indigo-50 border border-indigo-100/80 text-indigo-700 text-xs font-semibold tracking-wide uppercase">
-          <Tv2 className="w-3.5 h-3.5 text-indigo-600" />
-          <span>Pay2Me • Instant IPTV</span>
-        </div>
-        <LanguageSelector variant="inline" direction="down" />
+    <header className="text-center pt-2 pb-6">
+      {/* Brand Badge */}
+      <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-indigo-50 border border-indigo-100/80 text-indigo-700 text-xs font-semibold tracking-wide uppercase mb-3">
+        <Tv2 className="w-3.5 h-3.5 text-indigo-600" />
+        <span>Pay2Me • Instant IPTV Activation</span>
       </div>
 
-      <div className="text-center">
-        {/* Main Heading H1 */}
-        <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+      {/* Main Heading H1 */}
+      <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
           Get Your IPTV Subscription
         </h1>
 
@@ -35,7 +30,6 @@ export const Header: React.FC = () => {
             <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" /> 100% Secure Checkout
           </span>
         </div>
-      </div>
     </header>
   );
 };
