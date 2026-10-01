@@ -1,6 +1,6 @@
 import React from 'react';
 import { PaymentMethodId, SubscriptionPlanId } from '@/types/order';
-import { CreditCard, Landmark, DollarSign, MessageCircle, Zap, ShieldCheck } from 'lucide-react';
+import { CreditCard, Landmark, MessageCircle, Zap, ShieldCheck } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface PaymentMethodSelectorProps {
@@ -63,14 +63,6 @@ export const PaymentMethodSelector: React.FC<PaymentMethodSelectorProps> = ({
       badgeColor: 'bg-purple-100 text-purple-800 border-purple-200',
       icon: <Landmark className="w-5 h-5 text-purple-600" />,
     },
-    {
-      id: 'cash_app',
-      title: 'Cash App',
-      subtitle: 'Request $Cashtag details on WhatsApp',
-      badge: 'Fast Pay',
-      badgeColor: 'bg-emerald-100 text-emerald-800 border-emerald-200',
-      icon: <DollarSign className="w-5 h-5 text-emerald-600 stroke-[2.5]" />,
-    },
   ];
 
   const getMethodTitle = () => {
@@ -79,8 +71,6 @@ export const PaymentMethodSelector: React.FC<PaymentMethodSelectorProps> = ({
         return 'our active PayPal email address';
       case 'bank_transfer':
         return 'our bank account IBAN / wire details';
-      case 'cash_app':
-        return 'our official $Cashtag';
       case 'card':
       default:
         return 'CardToUSDT payment details';

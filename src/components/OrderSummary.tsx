@@ -33,8 +33,6 @@ export const OrderSummary: React.FC<OrderSummaryProps> = ({
         return 'Pay with PayPal';
       case 'bank_transfer':
         return 'Pay via Bank Transfer';
-      case 'cash_app':
-        return 'Pay with Cash App';
       case 'card':
       default:
         return 'Continue to Payment';
@@ -75,8 +73,6 @@ export const OrderSummary: React.FC<OrderSummaryProps> = ({
                   ? 'Card & Crypto'
                   : selectedPaymentMethod === 'bank_transfer'
                   ? 'Bank Transfer'
-                  : selectedPaymentMethod === 'cash_app'
-                  ? 'Cash App'
                   : 'PayPal'}
               </span>
             </div>
@@ -120,8 +116,6 @@ export const OrderSummary: React.FC<OrderSummaryProps> = ({
               ? 'bg-[#0070BA] hover:bg-[#005ea6] active:bg-[#004c86] shadow-sky-600/20 hover:shadow-lg'
               : selectedPaymentMethod === 'bank_transfer'
               ? 'bg-purple-600 hover:bg-purple-700 active:bg-purple-800 shadow-purple-600/20 hover:shadow-lg'
-              : selectedPaymentMethod === 'cash_app'
-              ? 'bg-[#00D632] hover:bg-[#00be2c] active:bg-[#00a827] text-slate-950 shadow-emerald-500/20 hover:shadow-lg'
               : 'bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 shadow-indigo-600/20 hover:shadow-lg hover:shadow-indigo-600/30'
           )}
         >

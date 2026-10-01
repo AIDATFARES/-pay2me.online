@@ -84,7 +84,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Validate paymentMethod
-    const validMethods: PaymentMethodId[] = ['card', 'paypal', 'bank_transfer', 'cash_app'];
+    const validMethods: PaymentMethodId[] = ['card', 'paypal', 'bank_transfer'];
     const selectedMethod: PaymentMethodId = validMethods.includes(paymentMethod as PaymentMethodId)
       ? (paymentMethod as PaymentMethodId)
       : 'card';
@@ -149,7 +149,6 @@ export async function POST(req: NextRequest) {
       const methodLabels: Record<PaymentMethodId, string> = {
         paypal: 'PayPal',
         bank_transfer: 'Bank Transfer',
-        cash_app: 'Cash App',
         card: 'Card',
       };
       const label = methodLabels[selectedMethod];

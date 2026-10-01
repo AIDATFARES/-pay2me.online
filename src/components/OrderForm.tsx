@@ -29,7 +29,7 @@ export const OrderForm: React.FC = () => {
     country: '',
     device: '',
     marketingConsent: false,
-    termsAgreed: false,
+    termsAgreed: true,
   });
 
   const [errors, setErrors] = useState<Partial<Record<keyof CustomerInfo, string>>>({});
@@ -107,13 +107,7 @@ export const OrderForm: React.FC = () => {
       newErrors.device = 'Please select the device you will use.';
     }
 
-    // MANDATORY CHECKBOX 1: Terms Agreement in CustomerForm
-    if (!customer.termsAgreed) {
-      newErrors.termsAgreed = 'You must click this checkbox confirming that you have read and agreed to the terms.';
-      hasCheckboxError = true;
-    }
-
-    // MANDATORY CHECKBOX 2: Payment Method Agreement (or Free Trial Agreement)
+    // MANDATORY CHECKBOX: Payment Method Agreement (or Free Trial Agreement)
     if (selectedPlan !== 'free_trial') {
       if (!methodAgreed) {
         if (selectedMethod === 'card') {

@@ -1,6 +1,6 @@
 export type SubscriptionPlanId = 'free_trial' | '1_month' | '3_months' | '6_months' | '12_months';
 export type DeviceCount = 1 | 2 | 3;
-export type PaymentMethodId = 'card' | 'paypal' | 'bank_transfer' | 'cash_app';
+export type PaymentMethodId = 'card' | 'paypal' | 'bank_transfer';
 
 export interface PlanOption {
   id: SubscriptionPlanId;

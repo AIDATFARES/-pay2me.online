@@ -180,43 +180,6 @@ export const CustomerForm: React.FC<CustomerFormProps> = ({
             )}
           </div>
         </div>
-
-        {/* Mandatory Terms & Conditions Agreement Checkbox */}
-        <div className="pt-2">
-          <label
-            className={cn(
-              'flex items-start gap-2.5 p-3 rounded-xl border transition-all cursor-pointer select-none',
-              errors.termsAgreed
-                ? 'bg-rose-50/90 border-rose-300 ring-2 ring-rose-200 text-rose-950'
-                : formData.termsAgreed
-                ? 'bg-emerald-50/60 border-emerald-300 text-emerald-950'
-                : 'bg-slate-50/80 border-slate-200 hover:bg-slate-100/60 text-slate-800'
-            )}
-          >
-            <input
-              type="checkbox"
-              name="termsAgreed"
-              checked={!!formData.termsAgreed}
-              onChange={(e) => onChange('termsAgreed', e.target.checked)}
-              className="mt-0.5 w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer flex-shrink-0"
-            />
-            <div className="text-xs leading-relaxed flex-1">
-              <span className="font-bold text-slate-900 block mb-0.5 flex items-center gap-1.5">
-                <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
-                Service Agreement & Terms Confirmation <span className="text-rose-500">*</span>
-              </span>
-              <span>
-                I confirm that I have read and agree to the <strong>Terms of Service</strong>, subscription policies, and order details.
-              </span>
-            </div>
-          </label>
-          {errors.termsAgreed && (
-            <p className="mt-1.5 text-xs text-rose-600 font-medium pl-1 flex items-center gap-1">
-              <span>⚠️</span> {errors.termsAgreed}
-            </p>
-          )}
-        </div>
-
       </div>
     </section>
   );

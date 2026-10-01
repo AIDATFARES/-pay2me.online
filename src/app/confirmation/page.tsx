@@ -79,7 +79,7 @@ function InvoiceContent() {
   const [copied, setCopied] = useState(false);
 
   const methodMeta = METHOD_LABELS[method] || METHOD_LABELS.card;
-  const isWhatsAppMethod = method === 'paypal' || method === 'bank_transfer' || method === 'cash_app';
+  const isWhatsAppMethod = method === 'paypal' || method === 'bank_transfer';
   const requiresScreenshot = isWhatsAppMethod || isTrial;
 
   // Construct prefilled WhatsApp message
@@ -233,7 +233,6 @@ function InvoiceContent() {
                 <span className={`font-black flex items-center gap-1.5 ${methodMeta.color}`}>
                   {method === 'paypal' && <span className="font-bold">PayPal</span>}
                   {method === 'bank_transfer' && <Landmark className="w-4 h-4" />}
-                  {method === 'cash_app' && <DollarSign className="w-4 h-4" />}
                   {method === 'card' && <CreditCard className="w-4 h-4" />}
                   {method === 'trial' && <Gift className="w-4 h-4" />}
                   <span>{methodMeta.name}</span>
@@ -296,29 +295,6 @@ function InvoiceContent() {
                 </li>
                 <li>
                   Send your <strong>bank confirmation slip</strong> together with this invoice screenshot to activate your account.
-                </li>
-              </ol>
-            </div>
-          )}
-
-          {method === 'cash_app' && (
-            <div className="p-4 sm:p-5 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-950 space-y-2">
-              <h3 className="text-sm font-bold flex items-center gap-2 text-emerald-900">
-                <DollarSign className="w-4 h-4 text-emerald-700" />
-                How to Complete Your Cash App Payment:
-              </h3>
-              <ol className="text-xs sm:text-sm text-emerald-900/90 list-decimal pl-5 space-y-1.5 leading-relaxed font-medium">
-                <li>
-                  Click the <strong>"Contact Seller on WhatsApp"</strong> button below.
-                </li>
-                <li>
-                  Request our active <strong>$Cashtag</strong> from our agent.
-                </li>
-                <li>
-                  Send the payment of <strong>${price} USD</strong> via Cash App.
-                </li>
-                <li>
-                  Share your payment confirmation and this invoice screenshot on WhatsApp for instant delivery!
                 </li>
               </ol>
             </div>
