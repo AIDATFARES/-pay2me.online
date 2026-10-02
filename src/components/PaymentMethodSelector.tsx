@@ -230,7 +230,7 @@ export const PaymentMethodSelector: React.FC<PaymentMethodSelectorProps> = ({
               ) : (
                 <>
                   <MessageCircle className="w-4 h-4 text-[#25D366] shrink-0" />
-                  <span className="truncate">Screenshot Verification Agreement</span>
+                  <span className="truncate">WhatsApp Invoice Agreement</span>
                 </>
               )}
               <span className="text-rose-500 shrink-0">*</span>
@@ -284,7 +284,7 @@ export const PaymentMethodSelector: React.FC<PaymentMethodSelectorProps> = ({
               </p>
             ) : (
               <p>
-                I confirm that I have read this and agree that after clicking Pay, I will receive an official invoice page. I agree to <strong>take a screenshot of the invoice and send it to the seller on WhatsApp</strong> to receive {getMethodTitle()} and get instant setup.
+                I confirm that I have read this and agree that after clicking Pay, I will receive an official invoice page. I agree to <strong className="font-semibold text-slate-900">return to WhatsApp and send the invoice directly to the seller</strong> to receive {getMethodTitle()} and get instant setup.
               </p>
             )}
           </div>

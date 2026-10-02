@@ -128,7 +128,7 @@ export const OrderForm: React.FC = () => {
       }
     } else {
       if (!trialAgreed) {
-        setTrialError('You must click this checkbox confirming that you agree to take and send a screenshot of the invoice on WhatsApp.');
+        setTrialError('You must click this checkbox confirming that you agree to return to WhatsApp and send the invoice directly to the seller.');
         hasCheckboxError = true;
       } else {
         setTrialError(null);
@@ -206,7 +206,7 @@ export const OrderForm: React.FC = () => {
         window.location.href = `/confirmation?${invoiceParams.toString()}`;
         setTimeout(() => setIsSubmitting(false), 2500);
       } else {
-        // PayPal / Bank Transfer / Cash App: direct to invoice page with WhatsApp screenshot instructions
+        // PayPal / Bank Transfer / Cash App: direct to invoice page with direct WhatsApp invoice instructions
         window.location.href = `/confirmation?${invoiceParams.toString()}`;
         setTimeout(() => setIsSubmitting(false), 2500);
       }
@@ -301,7 +301,7 @@ export const OrderForm: React.FC = () => {
               </div>
               <div className="font-bold text-xs sm:text-sm text-slate-900 flex items-center gap-1.5 truncate">
                 <Gift className="w-4 h-4 text-emerald-600 shrink-0" />
-                <span className="truncate">Free Trial & Screenshot Confirmation</span>
+                <span className="truncate">Free Trial & WhatsApp Invoice Confirmation</span>
                 <span className="text-rose-500 shrink-0">*</span>
               </div>
             </div>
@@ -343,7 +343,7 @@ export const OrderForm: React.FC = () => {
                 trialAgreed ? 'border-emerald-200/80' : 'border-amber-200/80'
               )}
             >
-              I confirm that I have read this and agree that this is a free trial limited to 1 connection. I agree to <strong className="text-slate-900 font-semibold">take a screenshot of the invoice and send it to the seller on WhatsApp</strong> to confirm my free trial request and receive line activation.
+              I confirm that I have read this and agree that this is a free trial limited to 1 connection. I agree to <strong className="text-slate-900 font-semibold">return to WhatsApp and send the invoice directly to the seller</strong> to confirm my free trial request and receive line activation.
             </div>
           )}
 

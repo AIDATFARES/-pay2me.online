@@ -11,7 +11,6 @@ import {
   Gift,
   CreditCard,
   ExternalLink,
-  Camera,
   Copy,
   Check,
   Printer,
@@ -80,24 +79,29 @@ function InvoiceContent() {
 
   const methodMeta = METHOD_LABELS[method] || METHOD_LABELS.card;
   const isWhatsAppMethod = method === 'paypal' || method === 'bank_transfer';
-  const requiresScreenshot = isWhatsAppMethod || isTrial;
+  const requiresFollowup = isWhatsAppMethod || isTrial;
 
-  // Construct prefilled WhatsApp message
+  // Construct prefilled WhatsApp message with complete invoice details
   const whatsappText = encodeURIComponent(
     isTrial
       ? `Hello! I just requested a Free Trial on pay2me.online.\n\n` +
         `📋 Invoice / Reference: ${orderId}\n` +
         `📦 Plan: Free Trial (1 Device)\n` +
         (customerName ? `👤 Customer: ${customerName}\n` : '') +
+        (customerEmail ? `✉️ Email: ${customerEmail}\n` : '') +
+        (customerCountry ? `🌍 Country: ${customerCountry}\n` : '') +
         (customerDevice ? `📱 Device: ${customerDevice}\n` : '') +
-        `\nI have taken a screenshot of my invoice. Please confirm and activate my free trial line!`
+        `\nHere is my invoice! Please confirm my request and activate my free trial line.`
       : `Hello! I just placed an order on pay2me.online.\n\n` +
         `📋 Order/Invoice: ${orderId}\n` +
         `📦 Plan: ${planName} (${devices} Device${Number(devices) > 1 ? 's' : ''})\n` +
         `💰 Amount Due: $${price} USD\n` +
         `💳 Payment Method: ${methodMeta.name}\n` +
         (customerName ? `👤 Customer: ${customerName}\n` : '') +
-        `\nI have taken a screenshot of my invoice. Please send me the payment instructions!`
+        (customerEmail ? `✉️ Email: ${customerEmail}\n` : '') +
+        (customerCountry ? `🌍 Country: ${customerCountry}\n` : '') +
+        (customerDevice ? `📱 Device: ${customerDevice}\n` : '') +
+        `\nHere is my invoice! Please send me the payment instructions to complete my order.`
   );
 
   const whatsappUrl = `https://wa.me/?text=${whatsappText}`;
@@ -155,24 +159,24 @@ function InvoiceContent() {
           </div>
         </div>
 
-        {/* Action Alert Banner: Screenshot Requirement */}
-        {requiresScreenshot && (
-          <div className="bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 p-4 sm:p-5 flex items-start gap-3 shadow-inner">
-            <div className="p-2 rounded-xl bg-slate-950/10 flex-shrink-0 mt-0.5">
-              <Camera className="w-6 h-6 text-slate-950" />
+        {/* Action Alert Banner: Direct WhatsApp Invoice */}
+        {requiresFollowup && (
+          <div className="bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 text-white p-4 sm:p-5 flex items-start gap-3 shadow-inner">
+            <div className="p-2 rounded-xl bg-white/20 flex-shrink-0 mt-0.5">
+              <MessageCircle className="w-6 h-6 text-white" />
             </div>
             <div className="flex-1 text-xs sm:text-sm">
               <strong className="block text-sm sm:text-base font-black uppercase tracking-wide">
-                📸 Step 1: Take a Screenshot of this Invoice
+                💬 Step 1: Send Your Invoice Directly on WhatsApp
               </strong>
-              <p className="mt-0.5 text-slate-900/90 leading-relaxed font-medium">
+              <p className="mt-0.5 text-white/95 leading-relaxed font-medium">
                 {isTrial ? (
                   <>
-                    Please <strong>take a screenshot of this invoice page right now</strong> and send it to our seller on WhatsApp. Your free trial line will be activated immediately upon receiving your screenshot!
+                    Please <strong>click the button below to return to WhatsApp and send your invoice directly to our seller</strong>. Your free trial line will be activated immediately upon receiving your message!
                   </>
                 ) : (
                   <>
-                    Please <strong>take a screenshot of this page right now</strong> and send it to our seller on WhatsApp. We will provide your {methodMeta.name} payment details and activate your subscription immediately after!
+                    Please <strong>click the button below to return to WhatsApp and send your invoice directly to our seller</strong>. We will provide your {methodMeta.name} payment details and activate your subscription immediately!
                   </>
                 )}
               </p>
@@ -262,16 +266,16 @@ function InvoiceContent() {
               </h3>
               <ol className="text-xs sm:text-sm text-sky-900/90 list-decimal pl-5 space-y-1.5 leading-relaxed font-medium">
                 <li>
-                  Click the <strong>"Contact Seller on WhatsApp"</strong> button below.
+                  Click the <strong>"Send Invoice Directly on WhatsApp"</strong> button below.
                 </li>
                 <li>
-                  Ask our support representative for our <strong>official PayPal email address</strong>.
+                  Send your invoice directly in the chat to receive our <strong>official PayPal email address</strong>.
                 </li>
                 <li>
                   Send the payment of <strong>${price} USD</strong>.
                 </li>
                 <li>
-                  Attach your <strong>invoice screenshot</strong> and transaction ID in the chat for instant activation!
+                  Confirm with the seller in the chat for instant activation!
                 </li>
               </ol>
             </div>
@@ -285,16 +289,16 @@ function InvoiceContent() {
               </h3>
               <ol className="text-xs sm:text-sm text-purple-900/90 list-decimal pl-5 space-y-1.5 leading-relaxed font-medium">
                 <li>
-                  Click the <strong>"Contact Seller on WhatsApp"</strong> button below.
+                  Click the <strong>"Send Invoice Directly on WhatsApp"</strong> button below.
                 </li>
                 <li>
-                  Ask our representative for our <strong>Bank Account / IBAN / Wire transfer details</strong>.
+                  Send your invoice in the chat to receive our <strong>Bank Account / IBAN / Wire transfer details</strong>.
                 </li>
                 <li>
                   Execute the transfer for <strong>${price} USD</strong>.
                 </li>
                 <li>
-                  Send your <strong>bank confirmation slip</strong> together with this invoice screenshot to activate your account.
+                  Share your transfer confirmation in the chat to activate your account!
                 </li>
               </ol>
             </div>
@@ -334,16 +338,16 @@ function InvoiceContent() {
               </h3>
               <ol className="text-xs sm:text-sm text-emerald-900/90 list-decimal pl-5 space-y-1.5 leading-relaxed font-medium">
                 <li>
-                  <strong>Take a screenshot</strong> of this confirmation invoice showing reference <strong>{orderId}</strong>.
+                  Click the <strong>"Send Invoice Directly on WhatsApp"</strong> button below.
                 </li>
                 <li>
-                  Click the <strong>"Send Screenshot on WhatsApp"</strong> button below.
+                  Send your invoice showing reference <strong>{orderId}</strong> directly to our seller in WhatsApp.
                 </li>
                 <li>
-                  Send the screenshot to our agent on WhatsApp to confirm your request.
+                  Our representative will confirm your request and send your login credentials immediately!
                 </li>
                 <li>
-                  Receive your instant login credentials and enjoy premium service!
+                  Enjoy your instant IPTV trial access!
                 </li>
               </ol>
             </div>
@@ -359,7 +363,7 @@ function InvoiceContent() {
             >
               <MessageCircle className="w-6 h-6 fill-white flex-shrink-0" />
               <span>
-                {requiresScreenshot ? 'Send Screenshot on WhatsApp' : 'Contact Support on WhatsApp'}
+                {requiresFollowup ? 'Send Invoice Directly on WhatsApp' : 'Contact Support on WhatsApp'}
               </span>
             </a>
 
