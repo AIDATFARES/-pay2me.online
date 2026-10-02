@@ -129,26 +129,26 @@ function InvoiceContent() {
       <div className="w-full max-w-2xl bg-white rounded-2xl sm:rounded-3xl border border-slate-200/90 shadow-xl shadow-slate-900/[0.06] overflow-hidden">
         
         {/* Top Header Banner */}
-        <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white p-5 sm:p-7">
-          <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white px-4 py-3 sm:px-5 sm:py-3.5">
+          <div className="flex flex-wrap items-center justify-between gap-2">
             <div>
-              <div className="flex items-center gap-2">
-                <FileText className="w-5 h-5 text-indigo-400" />
-                <span className="text-xs uppercase font-extrabold tracking-widest text-indigo-300">
+              <div className="flex items-center gap-1.5">
+                <FileText className="w-3.5 h-3.5 text-indigo-400" />
+                <span className="text-[11px] uppercase font-bold tracking-wider text-indigo-300">
                   {isTrial ? 'Free Trial Request' : 'Order Invoice'}
                 </span>
               </div>
-              <h1 className="text-xl sm:text-2xl font-black mt-1 tracking-tight text-white font-mono">
+              <h1 className="text-base sm:text-lg font-bold mt-0.5 tracking-tight text-white font-mono">
                 {orderId}
               </h1>
             </div>
 
             <div className="text-right">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-400/20 text-amber-300 border border-amber-400/30">
-                <Clock className="w-3.5 h-3.5" />
+              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-amber-400/20 text-amber-300 border border-amber-400/30">
+                <Clock className="w-3 h-3" />
                 {isTrial ? 'Pending Activation' : 'Pending Payment'}
               </span>
-              <p className="text-[11px] text-slate-400 mt-1">
+              <p className="text-[10px] text-slate-400 mt-0.5">
                 {new Date().toLocaleDateString('en-US', {
                   month: 'short',
                   day: 'numeric',
@@ -161,24 +161,18 @@ function InvoiceContent() {
 
         {/* Action Alert Banner: Direct WhatsApp Invoice */}
         {requiresFollowup && (
-          <div className="bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 text-white p-4 sm:p-5 flex items-start gap-3 shadow-inner">
-            <div className="p-2 rounded-xl bg-white/20 flex-shrink-0 mt-0.5">
-              <MessageCircle className="w-6 h-6 text-white" />
+          <div className="bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 text-white px-3.5 py-2 sm:px-4 sm:py-2.5 flex items-center gap-2.5 shadow-inner">
+            <div className="p-1.5 rounded-lg bg-white/20 flex-shrink-0">
+              <MessageCircle className="w-4 h-4 text-white" />
             </div>
-            <div className="flex-1 text-xs sm:text-sm">
-              <strong className="block text-sm sm:text-base font-black uppercase tracking-wide">
-                💬 Step 1: Send Your Invoice Directly on WhatsApp
+            <div className="flex-1 min-w-0">
+              <strong className="block text-xs sm:text-sm font-bold uppercase tracking-wide leading-tight">
+                💬 Step 1: Send Your Invoice on WhatsApp
               </strong>
-              <p className="mt-0.5 text-white/95 leading-relaxed font-medium">
-                {isTrial ? (
-                  <>
-                    Please <strong>click the button below to return to WhatsApp and send your invoice directly to our seller</strong>. Your free trial line will be activated immediately upon receiving your message!
-                  </>
-                ) : (
-                  <>
-                    Please <strong>click the button below to return to WhatsApp and send your invoice directly to our seller</strong>. We will provide your {methodMeta.name} payment details and activate your subscription immediately!
-                  </>
-                )}
+              <p className="text-[11px] sm:text-xs text-white/90 leading-tight mt-0.5 font-medium">
+                {isTrial
+                  ? 'Click the button below to return to WhatsApp and send your invoice for immediate activation!'
+                  : `Click the button below to return to WhatsApp and send your invoice to receive ${methodMeta.name} details!`}
               </p>
             </div>
           </div>
